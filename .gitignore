@@ -1,0 +1,11 @@
+# Helm build artifacts
+Chart.lock
+**/charts/
+*.tgz
+
+# Local docs
+docs/
+
+# Secrets
+.env
+*.secret
