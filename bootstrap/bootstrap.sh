@@ -5,6 +5,7 @@ set -euo pipefail
 # Run this ON the Ubuntu server. One-time setup.
 # Usage: bash bootstrap/bootstrap.sh
 
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 K3S_VERSION="${K3S_VERSION:-v1.33.12+k3s1}"
 ARGOCD_NODEPORT="${ARGOCD_NODEPORT:-30443}"
 ARGOCD_ADMIN_PASSWORD="${ARGOCD_ADMIN_PASSWORD:?Set ARGOCD_ADMIN_PASSWORD before running (plaintext, will be hashed)}"
@@ -16,7 +17,18 @@ curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="${K3S_VERSION}" sh -s - \
   --secrets-encryption
 
 echo "=== Waiting for K3s to be ready ==="
+# K3s needs a few seconds to register the node
+for i in $(seq 1 30); do
+  kubectl get nodes &>/dev/null && break
+  echo "  waiting for node to register... (${i}/30)"
+  sleep 2
+done
 kubectl wait --for=condition=Ready node --all --timeout=120s
+
+echo "=== Installing Helm (if needed) ==="
+if ! command -v helm &>/dev/null; then
+  curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+fi
 
 echo "=== Hashing ArgoCD admin password ==="
 ARGOCD_HASH=$(htpasswd -nbBC 10 "" "${ARGOCD_ADMIN_PASSWORD}" | cut -d: -f2)
