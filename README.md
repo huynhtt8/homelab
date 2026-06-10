@@ -41,6 +41,15 @@ ARGOCD_ADMIN_PASSWORD='your-secret' make bootstrap
 
 This installs K3s and ArgoCD.
 
+To also make the API reachable from other machines (e.g. your Mac over
+Tailscale) and export a ready-to-use kubeconfig, set `TLS_SANS` (space-separated;
+the first entry is used in the exported kubeconfig):
+
+```sh
+ARGOCD_ADMIN_PASSWORD='your-secret' \
+  TLS_SANS='homelab.tailXXXX.ts.net 100.x.y.z' make bootstrap
+```
+
 ### 2. Apply root service (one-time)
 
 ```sh

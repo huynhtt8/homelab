@@ -9,12 +9,20 @@ export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 K3S_VERSION="${K3S_VERSION:-v1.33.12+k3s1}"
 ARGOCD_NODEPORT="${ARGOCD_NODEPORT:-30443}"
 ARGOCD_ADMIN_PASSWORD="${ARGOCD_ADMIN_PASSWORD:?Set ARGOCD_ADMIN_PASSWORD before running (plaintext, will be hashed)}"
+# Extra addresses (Tailscale IP / MagicDNS name) remote clients use to reach the
+# API server. Space-separated; the first is also used in the exported kubeconfig.
+TLS_SANS="${TLS_SANS:-}"
 
 echo "=== Installing K3s ${K3S_VERSION} ==="
+# Add any TLS_SANS as --tls-san flags so the API cert is valid for remote
+# addresses (e.g. Tailscale) from first boot.
+SAN_ARGS=()
+for san in ${TLS_SANS}; do SAN_ARGS+=(--tls-san "$san"); done
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="${K3S_VERSION}" sh -s - \
   --write-kubeconfig-mode 0644 \
   --disable traefik \
-  --secrets-encryption
+  --secrets-encryption \
+  ${SAN_ARGS[@]+"${SAN_ARGS[@]}"}
 
 echo "=== Waiting for K3s to be ready ==="
 # K3s needs a few seconds to register the node
@@ -51,11 +59,27 @@ echo "=== Waiting for ArgoCD server ==="
 kubectl wait --for=condition=available deployment/argocd-server \
   --namespace argocd --timeout=120s
 
+echo "=== Exporting kubeconfig ==="
+if [ -n "${TLS_SANS}" ]; then
+  PRIMARY_SAN="${TLS_SANS%% *}"
+  KUBECONFIG_OUT="${HOME}/kubeconfig-homelab.yaml"
+  sed "s#https://127.0.0.1:6443#https://${PRIMARY_SAN}:6443#" \
+    /etc/rancher/k3s/k3s.yaml > "${KUBECONFIG_OUT}"
+  echo "Wrote remote kubeconfig to ${KUBECONFIG_OUT}"
+else
+  echo "TLS_SANS not set — skipping remote kubeconfig export."
+fi
+
 echo ""
 echo "=== Done! ==="
 echo "ArgoCD UI:  https://$(hostname -I | awk '{print $1}'):${ARGOCD_NODEPORT}"
 echo "Username:   admin"
 echo "Password:   (the ARGOCD_ADMIN_PASSWORD you provided)"
+if [ -n "${TLS_SANS}" ]; then
+  echo ""
+  echo "Remote kubeconfig: ${KUBECONFIG_OUT} (contains credentials — don't commit)"
+  echo "  From your Mac:  scp $(whoami)@${PRIMARY_SAN}:${KUBECONFIG_OUT} ~/.kube/homelab.yaml"
+fi
 echo ""
 echo "Next: apply your root app"
 echo "  kubectl apply -f argocd/root.yaml"
