@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stack-configurator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: configurator
+          image: python:3.11-alpine
+          command: ["/bin/sh", "-c", "pip install requests && python /app/script.py"]
+          volumeMounts:
+            - name: script
+              mountPath: /app/script.py
+              subPath: script.py
+            - name: infra-data
+              mountPath: /mnt/infra-data
+      volumes:
+        - name: script
+          configMap:
+            name: stack-configurator-script
+        - name: infra-data
+          hostPath:
+            path: /mnt/infra-data
+            type: Directory

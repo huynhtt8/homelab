@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stack-configurator-script
+  namespace: argocd
+data:
+  script.py: |
+    import os
+    import xml.etree.ElementTree as ET
+    import requests
+    import time
+
+    def get_api_key(app_name):
+        config_path = f"/mnt/infra-data/{app_name}/config.xml"
+        if not os.path.exists(config_path):
+            print(f"Waiting for {config_path}...")
+            return None
+        try:
+            tree = ET.parse(config_path)
+            root = tree.getroot()
+            for child in root:
+                if child.tag == 'ApiKey':
+                    return child.text
+        except Exception as e:
+            print(f"Error parsing {config_path}: {e}")
+        return None
+
+    def wait_for_app(app_name):
+        for _ in range(30):
+            key = get_api_key(app_name)
+            if key:
+                print(f"Found API key for {app_name}")
+                return key
+            time.sleep(10)
+        raise Exception(f"Timeout waiting for {app_name} config.xml")
+
+    radarr_key = wait_for_app("radarr")
+    sonarr_key = wait_for_app("sonarr")
+    prowlarr_key = wait_for_app("prowlarr")
+
+    RADARR_URL = "http://radarr.radarr.svc.cluster.local:7878"
+    SONARR_URL = "http://sonarr.sonarr.svc.cluster.local:8989"
+    PROWLARR_URL = "http://prowlarr.prowlarr.svc.cluster.local:9696"
+
+    def add_app_to_prowlarr(app_name, app_url, app_key, sync_categories):
+        headers = {"X-Api-Key": prowlarr_key}
+        resp = requests.get(f"{PROWLARR_URL}/api/v1/applications", headers=headers)
+        if resp.status_code == 200:
+            existing = [a['name'] for a in resp.json()]
+            if app_name.capitalize() in existing:
+                print(f"{app_name} already in Prowlarr")
+                return
+                
+        payload = {
+            "name": app_name.capitalize(),
+            "syncLevel": "fullSync",
+            "implementation": app_name.capitalize(),
+            "configContract": f"{app_name.capitalize()}Settings",
+            "fields": [
+                {"name": "prowlarrUrl", "value": "http://prowlarr.prowlarr.svc.cluster.local:9696"},
+                {"name": "baseUrl", "value": app_url},
+                {"name": "apiKey", "value": app_key},
+                {"name": "syncCategories", "value": sync_categories}
+            ]
+        }
+        res = requests.post(f"{PROWLARR_URL}/api/v1/applications", json=payload, headers=headers)
+        if res.status_code == 201:
+            print(f"Added {app_name} to Prowlarr")
+        else:
+            print(f"Failed to add {app_name} to Prowlarr: {res.text}")
+
+    # For Prowlarr Categories: Radarr uses 2000s, Sonarr uses 5000s
+    add_app_to_prowlarr("radarr", RADARR_URL, radarr_key, [2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060, 2070, 2080])
+    add_app_to_prowlarr("sonarr", SONARR_URL, sonarr_key, [5000, 5010, 5020, 5030, 5040, 5045, 5050, 5060, 5070, 5080])
+
+    def add_qbit_to_app(app_name, url, key):
+        headers = {"X-Api-Key": key}
+        resp = requests.get(f"{url}/api/v3/downloadclient", headers=headers)
+        if resp.status_code == 200:
+            if any(c['name'] == 'qBittorrent' for c in resp.json()):
+                print(f"qBittorrent already in {app_name}")
+                return
+                
+        payload = {
+            "enable": True,
+            "protocol": "torrent",
+            "priority": 1,
+            "name": "qBittorrent",
+            "implementation": "QBittorrent",
+            "configContract": "QBittorrentSettings",
+            "fields": [
+                {"name": "host", "value": "qbittorrent.qbittorrent.svc.cluster.local"},
+                {"name": "port", "value": 8084},
+                {"name": "username", "value": "admin"},
+                {"name": "password", "value": "adminadmin"},
+                {"name": "category", "value": app_name},
+                {"name": "useSsl", "value": False}
+            ]
+        }
+        res = requests.post(f"{url}/api/v3/downloadclient", json=payload, headers=headers)
+        if res.status_code == 201:
+            print(f"Added qBittorrent to {app_name}")
+        else:
+            print(f"Failed to add qBittorrent to {app_name}: {res.text}")
+
+    add_qbit_to_app("radarr", RADARR_URL, radarr_key)
+    add_qbit_to_app("sonarr", SONARR_URL, sonarr_key)
+
+    print("Stack Configuration Complete!")

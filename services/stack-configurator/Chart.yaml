@@ -1,0 +1,5 @@
+apiVersion: v2
+name: stack-configurator
+description: A Helm chart for configuring the Arr stack automatically
+type: application
+version: 0.1.0
