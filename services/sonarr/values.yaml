@@ -44,7 +44,7 @@ app-template:
       className: traefik
       annotations: {}
       hosts:
-      - host: sonarr.home.local
+      - host: sonarr.home.arpa
         paths:
         - path: "/"
           pathType: Prefix

@@ -36,19 +36,18 @@ app-template:
           port: 8083
           nodePort: 31083
           protocol: HTTP
-  # Ingress disabled for now — add back when Traefik is set up
-  # ingress:
-  #   main:
-  #     enabled: true
-  #     className: traefik
-  #     hosts:
-  #     - host: library.home.arpa
-  #       paths:
-  #       - path: "/"
-  #         pathType: Prefix
-  #         service:
-  #           name: main
-  #           port: http
+  ingress:
+    main:
+      enabled: true
+      className: traefik
+      hosts:
+      - host: library.home.arpa
+        paths:
+        - path: "/"
+          pathType: Prefix
+          service:
+            name: main
+            port: http
   persistence:
     config:
       enabled: true

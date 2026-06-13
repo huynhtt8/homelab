@@ -44,7 +44,7 @@ app-template:
       className: traefik
       annotations: {}
       hosts:
-      - host: radarr.home.local
+      - host: radarr.home.arpa
         paths:
         - path: "/"
           pathType: Prefix

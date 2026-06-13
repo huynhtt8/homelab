@@ -44,7 +44,7 @@ app-template:
       className: traefik
       annotations: {}
       hosts:
-      - host: prowlarr.home.local
+      - host: prowlarr.home.arpa
         paths:
         - path: "/"
           pathType: Prefix

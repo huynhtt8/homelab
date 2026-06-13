@@ -40,7 +40,7 @@ app-template:
       className: traefik
       annotations: {}
       hosts:
-      - host: jellyfin.home.local
+      - host: jellyfin.home.arpa
         paths:
         - path: "/"
           pathType: Prefix

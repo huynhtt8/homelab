@@ -44,7 +44,7 @@ app-template:
       className: traefik
       annotations: {}
       hosts:
-      - host: bazarr.home.local
+      - host: bazarr.home.arpa
         paths:
         - path: "/"
           pathType: Prefix
