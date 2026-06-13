@@ -13,6 +13,15 @@ spec:
         - name: configurator
           image: python:3.11-alpine
           command: ["/bin/sh", "-c", "pip install requests && python /app/script.py"]
+          env:
+            - name: QBIT_USERNAME
+              value: "admin"
+            - name: QBIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: qbit-creds
+                  key: password
+                  optional: true
           volumeMounts:
             - name: script
               mountPath: /app/script.py

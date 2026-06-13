@@ -83,12 +83,12 @@ app-template:
         main:
           main:
           - path: "/config"
-    main-downloads:
+    main-media:
       enabled: true
       type: hostPath
       hostPath: "/mnt/media"
-      hostPathType: Directory
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:
-          - path: "/downloads"
+          - path: "/data"

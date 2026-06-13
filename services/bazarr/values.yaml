@@ -61,7 +61,7 @@ app-template:
         main:
           main:
           - path: "/config"
-    main-tv:
+    main-media:
       enabled: true
       type: hostPath
       hostPath: "/mnt/media"
@@ -69,13 +69,4 @@ app-template:
       advancedMounts:
         main:
           main:
-          - path: "/tv"
-    main-movies:
-      enabled: true
-      type: hostPath
-      hostPath: "/mnt/media"
-      hostPathType: DirectoryOrCreate
-      advancedMounts:
-        main:
-          main:
-          - path: "/movies"
+          - path: "/data"

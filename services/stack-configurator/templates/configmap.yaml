@@ -81,6 +81,13 @@ data:
                 print(f"qBittorrent already in {app_name}")
                 return
                 
+        qbit_user = os.environ.get("QBIT_USERNAME", "admin")
+        qbit_pass = os.environ.get("QBIT_PASSWORD")
+        
+        if not qbit_pass:
+            print(f"Skipping qBittorrent setup for {app_name}: QBIT_PASSWORD env var not set.")
+            return
+
         payload = {
             "enable": True,
             "protocol": "torrent",
@@ -91,8 +98,8 @@ data:
             "fields": [
                 {"name": "host", "value": "qbittorrent.qbittorrent.svc.cluster.local"},
                 {"name": "port", "value": 8084},
-                {"name": "username", "value": "admin"},
-                {"name": "password", "value": "adminadmin"},
+                {"name": "username", "value": qbit_user},
+                {"name": "password", "value": qbit_pass},
                 {"name": "category", "value": app_name},
                 {"name": "useSsl", "value": False}
             ]
@@ -105,5 +112,30 @@ data:
 
     add_qbit_to_app("radarr", RADARR_URL, radarr_key)
     add_qbit_to_app("sonarr", SONARR_URL, sonarr_key)
+
+    def set_qbit_preferences():
+        qbit_user = os.environ.get("QBIT_USERNAME", "admin")
+        qbit_pass = os.environ.get("QBIT_PASSWORD")
+        if not qbit_pass:
+            return
+            
+        try:
+            login_data = {'username': qbit_user, 'password': qbit_pass}
+            session = requests.Session()
+            res = session.post("http://qbittorrent.qbittorrent.svc.cluster.local:8084/api/v2/auth/login", data=login_data)
+            if res.status_code == 200 and res.text == 'Ok.':
+                import json
+                prefs = {"save_path": "/data/downloads"}
+                res = session.post("http://qbittorrent.qbittorrent.svc.cluster.local:8084/api/v2/app/setPreferences", data={"json": json.dumps(prefs)})
+                if res.status_code == 200:
+                    print("Set qBittorrent default save path to /data/downloads")
+                else:
+                    print(f"Failed to set qBittorrent prefs: {res.text}")
+            else:
+                print(f"Failed to login to qBittorrent: {res.status_code} {res.text}")
+        except Exception as e:
+            print(f"Could not connect to qBittorrent to set preferences: {e}")
+
+    set_qbit_preferences()
 
     print("Stack Configuration Complete!")
