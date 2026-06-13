@@ -1,11 +1,11 @@
 app-template:
-  fullnameOverride: jellyfin
+  fullnameOverride: audiobookshelf
   controllers:
     main:
       containers:
         main:
           image:
-            repository: jellyfin/jellyfin
+            repository: ghcr.io/advplyr/audiobookshelf
             tag: latest
           probes:
             liveness:
@@ -17,12 +17,9 @@ app-template:
           env:
           - name: TZ
             value: Asia/Ho_Chi_Minh
-          resources:
-            limits:
-              memory: 1Gi
           ports:
           - name: http
-            containerPort: 8096
+            containerPort: 80
   service:
     main:
       enabled: true
@@ -32,7 +29,7 @@ app-template:
         http:
           enabled: true
           primary: true
-          port: 8096
+          port: 80
           protocol: HTTP
   ingress:
     main:
@@ -40,7 +37,7 @@ app-template:
       className: traefik
       annotations: {}
       hosts:
-      - host: jellyfin.home.arpa
+      - host: library.home.local
         paths:
         - path: "/"
           pathType: Prefix
@@ -48,31 +45,30 @@ app-template:
             name: main
             port: http
   persistence:
+    main-library:
+      enabled: true
+      type: hostPath
+      hostPath: "/mnt/hdd2/library"
+      hostPathType: Directory
+      advancedMounts:
+        main:
+          main:
+          - path: "/library"
     main-config:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/jellyfin/config"
-      hostPathType: DirectoryOrCreate
+      hostPath: "/mnt/infra-data/audiobookshelf/config"
+      hostPathType: Directory
       advancedMounts:
         main:
           main:
           - path: "/config"
-    main-cache:
+    main-metadata:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/jellyfin/cache"
-      hostPathType: DirectoryOrCreate
+      hostPath: "/mnt/infra-data/audiobookshelf/metadata"
+      hostPathType: Directory
       advancedMounts:
         main:
           main:
-          - path: "/cache"
-    main-media:
-      enabled: true
-      type: hostPath
-      hostPath: "/mnt/media/media"
-      hostPathType: DirectoryOrCreate
-      advancedMounts:
-        main:
-          main:
-          - path: "/data/media"
-            readOnly: true
+          - path: "/metadata"

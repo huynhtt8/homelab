@@ -61,7 +61,7 @@ app-template:
     books:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/media/library/books"
+      hostPath: "/mnt/hdd2/library/books"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
@@ -70,7 +70,7 @@ app-template:
     ingest:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/media/library/books-ingest"
+      hostPath: "/mnt/hdd2/library/books-ingest"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
