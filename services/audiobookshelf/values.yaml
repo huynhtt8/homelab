@@ -49,7 +49,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/hdd2/library"
-      hostPathType: Directory
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:
@@ -58,7 +58,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/infra-data/audiobookshelf/config"
-      hostPathType: Directory
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:
@@ -67,7 +67,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/infra-data/audiobookshelf/metadata"
-      hostPathType: Directory
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:

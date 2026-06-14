@@ -69,10 +69,10 @@ app-template:
     main-media:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/media/media"
+      hostPath: "/mnt/media"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:
-          - path: "/data/media"
+          - path: "/data"
             readOnly: true
