@@ -9,3 +9,4 @@ docs/
 # Secrets
 .env
 *.secret
+AGENTS.md
