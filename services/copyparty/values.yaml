@@ -52,7 +52,7 @@ app-template:
       className: traefik
       annotations: {}
       hosts:
-      - host: share.home.local
+      - host: share.home.arpa
         paths:
         - path: "/"
           pathType: Prefix

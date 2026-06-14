@@ -37,7 +37,7 @@ app-template:
       className: traefik
       annotations: {}
       hosts:
-      - host: library.home.local
+      - host: audiobook.home.arpa
         paths:
         - path: "/"
           pathType: Prefix
