@@ -48,7 +48,7 @@ app-template:
     main-library:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/hdd2/library"
+      hostPath: "/mnt/hdd2/audiobook"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
