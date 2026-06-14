@@ -105,12 +105,13 @@ app-template:
     server:
       enabled: true
       controller: server
-      type: ClusterIP
+      type: NodePort
       ports:
         http:
           enabled: true
           primary: true
           port: 2283
+          nodePort: 32283
           protocol: HTTP
     redis:
       enabled: true
