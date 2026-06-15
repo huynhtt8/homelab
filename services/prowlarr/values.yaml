@@ -25,6 +25,18 @@ app-template:
           - name: web
             containerPort: 9696
             hostPort: 9696
+
+        # Container 2: FlareSolverr Sidecar
+        flaresolverr:
+          image:
+            repository: ghcr.io/flaresolverr/flaresolverr
+            tag: latest
+          env:
+          - name: LOG_LEVEL
+            value: info
+          - name: TZ
+            value: Asia/Ho_Chi_Minh
+
   service:
     main:
       enabled: true
@@ -38,6 +50,7 @@ app-template:
           protocol: HTTP
         http:
           enabled: false
+
   ingress:
     main:
       enabled: true
@@ -51,6 +64,7 @@ app-template:
           service:
             name: main
             port: web
+
   persistence:
     main-config:
       enabled: true
