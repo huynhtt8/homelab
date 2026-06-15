@@ -24,13 +24,14 @@ app-template:
     main:
       enabled: true
       controller: main
-      type: ClusterIP
+      type: NodePort
       ports:
         http:
           enabled: true
           primary: true
-          port: 80
+          nodePort: 32378
           protocol: HTTP
+
   ingress:
     main:
       enabled: true
