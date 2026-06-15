@@ -29,6 +29,7 @@ app-template:
         http:
           enabled: true
           primary: true
+          port: 80
           nodePort: 32378
           protocol: HTTP
 
