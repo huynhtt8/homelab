@@ -7,6 +7,17 @@ app-template:
           image:
             repository: copyparty/ac
             tag: latest
+          env:
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: copyparty-config
+                  key: password
+          args:
+            - "-a"
+            - "admin:$(PASSWORD)"
+            - "-v"
+            - "/w:/:rw,admin"
           probes:
             liveness:
               enabled: true
@@ -60,16 +71,7 @@ app-template:
             name: main
             port: http
   persistence:
-    main-config:
-      enabled: true
-      type: secret
-      name: copyparty-config
-      advancedMounts:
-        main:
-          main:
-          - path: "/cfg/copyparty.conf"
-            subPath: config
-            readOnly: true
+
     main-share:
       enabled: true
       type: hostPath

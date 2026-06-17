@@ -1,0 +1,20 @@
+config:
+  # App secrets should be set with:
+  #   pulumi config set --secret homelab:secrets '<json-array>'
+  #
+  # The real Pulumi.homelab.yaml will contain one encrypted `secure:` entry for
+  # the whole JSON array. Do not commit plaintext secret values.
+  #
+  # Example JSON array shape:
+  # [
+  #   {
+  #     "name": "copyparty-password",
+  #     "data": {
+  #       "password": "very-secure-password"
+  #     }
+  #   }
+  # ]
+  #
+  # Pulumi writes these as Kubernetes Secrets, defaulting to the
+  # central-secrets namespace unless `namespace` is set on an entry.
+  homelab:secrets: []

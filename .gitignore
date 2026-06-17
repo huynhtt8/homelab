@@ -1,3 +1,4 @@
+.idea
 # Helm build artifacts
 Chart.lock
 **/charts/
@@ -8,7 +9,10 @@ docs/
 
 # Secrets
 .env
-*.secret
+*secret*
 
 /*.md
 !/README.md
+
+Pulumi.*.yaml
+!pulumi/Pulumi.*.yaml

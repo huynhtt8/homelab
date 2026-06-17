@@ -1,0 +1,5 @@
+apiVersion: v2
+name: central-secrets
+description: In-cluster central secret store for External Secrets Operator.
+type: application
+version: 0.1.0
