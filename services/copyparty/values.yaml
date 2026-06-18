@@ -18,6 +18,8 @@ app-template:
             - "admin:$(PASSWORD)"
             - "-v"
             - "/w:/:rw,admin"
+            - --rproxy=-1
+            - --xff-src=10.42.0.0/16
           probes:
             liveness:
               enabled: true
