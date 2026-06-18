@@ -45,6 +45,13 @@ func TestConfigValidate(t *testing.T) {
 				},
 			},
 		},
+		"string shorthand": {
+			cfg: Config{
+				Secrets: []Secret{
+					{Name: "copyparty-password", Data: map[string]string{"password": "value"}},
+				},
+			},
+		},
 	}
 
 	for name, tt := range tests {
