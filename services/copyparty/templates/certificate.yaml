@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: copyparty-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: copyparty-tls
+  commonName: share.home.arpa
+  dnsNames:
+    - share.home.arpa
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer

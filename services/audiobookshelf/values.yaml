@@ -38,6 +38,10 @@ app-template:
       enabled: true
       className: traefik
       annotations: {}
+      tls:
+        - hosts:
+            - audiobook.home.arpa
+          secretName: audiobookshelf-tls
       hosts:
       - host: audiobook.home.arpa
         paths:

@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: qbittorrent-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: qbittorrent-tls
+  commonName: qbittorrent.home.arpa
+  dnsNames:
+    - qbittorrent.home.arpa
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer

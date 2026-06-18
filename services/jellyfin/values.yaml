@@ -39,6 +39,10 @@ app-template:
       enabled: true
       className: traefik
       annotations: {}
+      tls:
+        - hosts:
+            - jellyfin.home.arpa
+          secretName: jellyfin-tls
       hosts:
       - host: jellyfin.home.arpa
         paths:

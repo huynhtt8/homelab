@@ -144,6 +144,10 @@ app-template:
       enabled: true
       className: traefik
       annotations: {}
+      tls:
+        - hosts:
+            - immich.home.arpa
+          secretName: immich-tls
       hosts:
       - host: immich.home.arpa
         paths:

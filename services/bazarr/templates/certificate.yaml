@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bazarr-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: bazarr-tls
+  commonName: bazarr.home.arpa
+  dnsNames:
+    - bazarr.home.arpa
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer

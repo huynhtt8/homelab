@@ -65,6 +65,10 @@ app-template:
       enabled: true
       className: traefik
       annotations: {}
+      tls:
+        - hosts:
+            - qbittorrent.home.arpa
+          secretName: qbittorrent-tls
       hosts:
       - host: qbittorrent.home.arpa
         paths:

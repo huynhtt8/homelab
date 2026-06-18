@@ -64,6 +64,10 @@ app-template:
       enabled: true
       className: traefik
       annotations: {}
+      tls:
+        - hosts:
+            - share.home.arpa
+          secretName: copyparty-tls
       hosts:
       - host: share.home.arpa
         paths:

@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: jellyfin-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: jellyfin-tls
+  commonName: jellyfin.home.arpa
+  dnsNames:
+    - jellyfin.home.arpa
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer

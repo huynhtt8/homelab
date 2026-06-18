@@ -43,6 +43,10 @@ app-template:
       enabled: true
       className: traefik
       annotations: {}
+      tls:
+        - hosts:
+            - radarr.home.arpa
+          secretName: radarr-tls
       hosts:
       - host: radarr.home.arpa
         paths:

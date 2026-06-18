@@ -56,6 +56,10 @@ app-template:
       enabled: true
       className: traefik
       annotations: {}
+      tls:
+        - hosts:
+            - prowlarr.home.arpa
+          secretName: prowlarr-tls
       hosts:
       - host: prowlarr.home.arpa
         paths:

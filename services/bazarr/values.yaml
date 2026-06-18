@@ -43,6 +43,10 @@ app-template:
       enabled: true
       className: traefik
       annotations: {}
+      tls:
+        - hosts:
+            - bazarr.home.arpa
+          secretName: bazarr-tls
       hosts:
       - host: bazarr.home.arpa
         paths:

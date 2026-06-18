@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: prowlarr-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: prowlarr-tls
+  commonName: prowlarr.home.arpa
+  dnsNames:
+    - prowlarr.home.arpa
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer

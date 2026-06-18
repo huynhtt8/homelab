@@ -40,6 +40,11 @@ app-template:
     main:
       enabled: true
       className: traefik
+      annotations: {}
+      tls:
+        - hosts:
+            - library.home.arpa
+          secretName: calibre-web-tls
       hosts:
       - host: library.home.arpa
         paths:

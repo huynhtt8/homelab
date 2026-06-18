@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sonarr-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: sonarr-tls
+  commonName: sonarr.home.arpa
+  dnsNames:
+    - sonarr.home.arpa
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer
