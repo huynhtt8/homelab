@@ -10,6 +10,7 @@ docs/
 # Secrets
 .env
 *secret*
+!services/*/templates/externalsecret.yaml
 
 /*.md
 !/README.md
