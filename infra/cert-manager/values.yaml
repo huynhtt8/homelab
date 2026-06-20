@@ -1,2 +1,5 @@
 cert-manager:
+  global:
+    nodeSelector:
+      node-type: infra
   installCRDs: true

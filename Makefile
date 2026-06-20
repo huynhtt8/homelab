@@ -1,10 +1,13 @@
-.PHONY: help bootstrap teardown validate
+.PHONY: help bootstrap bootstrap-worker teardown validate
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-15s %s\n", $$1, $$2}'
 
 bootstrap: ## Install K3s + ArgoCD on the server
 	bash bootstrap/bootstrap.sh
+
+bootstrap-worker: ## Join a worker node to the cluster
+	K3S_ROLE=agent bash bootstrap/bootstrap.sh
 
 teardown: ## Uninstall K3s completely (keeps service data)
 	bash bootstrap/teardown.sh
@@ -20,4 +23,3 @@ validate: ## Lint all Helm charts + ArgoCD YAML
 		helm lint "$$dir"; \
 	done
 	@echo "All good."
-

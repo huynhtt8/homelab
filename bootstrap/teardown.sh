@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
-
+if [ "$(id -u)" -ne 0 ]; then
+  echo "This script must be run as root. Use: sudo -E make bootstrap" >&2
+  exit 1
+fi
 # --- Teardown K3s ---
 # This completely removes K3s and all cluster data.
 # Your app data on /mnt/infra-data and /mnt/media is NOT touched.

@@ -2,6 +2,9 @@ app-template:
   fullnameOverride: immich
   controllers:
     server:
+      pod:
+        nodeSelector:
+          node-type: media-worker
       containers:
         main:
           image:
@@ -36,6 +39,9 @@ app-template:
     machine-learning:
       enabled: false
     redis:
+      pod:
+        nodeSelector:
+          node-type: media-worker
       containers:
         main:
           image:
@@ -52,6 +58,9 @@ app-template:
           - name: redis
             containerPort: 6379
     postgres:
+      pod:
+        nodeSelector:
+          node-type: media-worker
       containers:
         main:
           image:
@@ -161,7 +170,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/hdd2/immich"
-      hostPathType: DirectoryOrCreate
+      hostPathType: Directory
       advancedMounts:
         server:
           main:
@@ -180,7 +189,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/infra-data/immich/postgres"
-      hostPathType: DirectoryOrCreate
+      hostPathType: Directory
       advancedMounts:
         postgres:
           main:

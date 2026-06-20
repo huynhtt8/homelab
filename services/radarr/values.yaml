@@ -2,6 +2,9 @@ app-template:
   fullnameOverride: radarr
   controllers:
     main:
+      pod:
+        nodeSelector:
+          node-type: media-worker
       containers:
         main:
           image:
@@ -60,7 +63,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/infra-data/radarr"
-      hostPathType: DirectoryOrCreate
+      hostPathType: Directory
       advancedMounts:
         main:
           main:
@@ -69,7 +72,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/media"
-      hostPathType: DirectoryOrCreate
+      hostPathType: Directory
       advancedMounts:
         main:
           main:

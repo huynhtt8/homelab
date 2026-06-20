@@ -12,9 +12,9 @@ Infrastructure-as-code for a homelab built around:
 Work machine: edit + git push
   → Git repo
   → ArgoCD (watches repo, syncs to cluster)
-  → K3s single node
-    ├── infra/ (traefik, etc)
-    └── services/     (jellyfin, sonarr, home assistant, ...)
+  → K3s 2-node cluster
+    ├── infra node: lightweight controllers and ingress
+    └── media-worker node: media services
 ```
 
 ## Repo Structure
@@ -36,18 +36,42 @@ Makefile             bootstrap / teardown / validate
 
 ```sh
 git clone https://github.com/huynhtt8/homelab && cd homelab
-ARGOCD_ADMIN_PASSWORD='your-secret' make bootstrap
+K3S_ROLE=server \
+K3S_NODE_NAME=k3s-master-01 \
+K3S_NODE_IP=<server-tailnet-ip> \
+K3S_NODE_EXTERNAL_IP=<server-tailnet-ip> \
+TLS_SANS='<server-tailnet-ip> k3s-master-01 <server-name>.your-tailnet.ts.net' \
+ARGOCD_ADMIN_PASSWORD='your-secret' \
+make bootstrap
 ```
 
 This installs K3s and ArgoCD.
 
 To also make the API reachable from other machines (e.g. your Mac over
 Tailscale) and export a ready-to-use kubeconfig, set `TLS_SANS` (space-separated;
-the first entry is used in the exported kubeconfig):
+the first entry is used in the exported kubeconfig). Keep the Tailnet IP and
+node names in your shell env, not in Git.
 
 ```sh
+K3S_ROLE=server \
+K3S_NODE_NAME=k3s-master-01 \
+K3S_NODE_IP=<server-tailnet-ip> \
+K3S_NODE_EXTERNAL_IP=<server-tailnet-ip> \
+TLS_SANS='<server-name>.your-tailnet.ts.net <server-tailnet-ip>' \
 ARGOCD_ADMIN_PASSWORD='your-secret' \
-  TLS_SANS='homelab.tailXXXX.ts.net 100.x.y.z' make bootstrap
+make bootstrap
+```
+
+To join the worker node, run the same script in agent mode:
+
+```sh
+K3S_ROLE=agent \
+K3S_NODE_NAME=k3s-worker-media-01 \
+K3S_NODE_IP=<worker-tailnet-ip> \
+K3S_NODE_EXTERNAL_IP=<worker-tailnet-ip> \
+K3S_SERVER_URL=https://<server-tailnet-ip>:6443 \
+K3S_TOKEN='k3s token from server' \
+make bootstrap-worker
 ```
 
 ### 2. Apply root service (one-time)
@@ -80,14 +104,21 @@ git add -A && git commit -m 'chore: update jellyfin' && git push
 
 ## Storage
 
-Two host mounts, shared across all services via `hostPath`:
+Node placement:
+
+| Node label | Workloads |
+|------|-----------|
+| `node-type=infra` | Traefik, cert-manager, External Secrets, and other lightweight controllers |
+| `node-type=media-worker` | All services that mount hostPath data (`/mnt/media`, `/mnt/infra-data`, `/mnt/hdd2`) |
+
+Two host mounts, shared across the media services via `hostPath`:
 
 | Path | Purpose |
 |------|---------|
 | `/mnt/media` | Media files (tv, movies, downloads) |
 | `/mnt/infra-data/<service>` | Service configs (jellyfin, sonarr, etc.) |
 
-K3s pods mount the same directories Docker used — no data migration needed.
+K3s pods mount the same directories Docker used on the media worker node - no data migration needed.
 
 ## DNS
 
@@ -102,4 +133,3 @@ Removes K3s and all cluster state. Service data on `/mnt/infra-data` and `/mnt/m
 ```sh
 make teardown
 ```
-

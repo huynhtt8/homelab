@@ -2,6 +2,12 @@ app-template:
   fullnameOverride: copyparty
   controllers:
     main:
+      pod:
+        nodeSelector:
+          node-type: media-worker
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
       containers:
         main:
           image:
@@ -44,10 +50,7 @@ app-template:
           ports:
           - name: http
             containerPort: 3923
-      pod:
-        securityContext:
-          runAsUser: 1000
-          runAsGroup: 1000
+
   service:
     main:
       enabled: true

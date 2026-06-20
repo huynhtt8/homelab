@@ -1,5 +1,7 @@
 traefik:
   fullnameOverride: traefik
+  nodeSelector:
+    node-type: infra
   deployment:
     replicas: 1
   ingressClass:
