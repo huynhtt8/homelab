@@ -8,7 +8,8 @@ config:
   # Example JSON array shape:
   # [
   #   {
-  #     "name": "copyparty-password",
+  #     "name": "copyparty-config",
+  #     "namespace": "copyparty",
   #     "data": {
   #       "password": "very-secure-password"
   #     }
