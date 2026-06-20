@@ -14,6 +14,8 @@ traefik:
       allowCrossNamespace: true
     kubernetesIngress:
       enabled: true
+      ingressEndpoint:
+        hostname: traefik.home.arpa
   ports:
     web:
       http:
