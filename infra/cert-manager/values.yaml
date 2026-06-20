@@ -3,3 +3,14 @@ cert-manager:
     nodeSelector:
       node-type: infra
   installCRDs: true
+  nodeSelector:
+    node-type: infra
+  webhook:
+    nodeSelector:
+      node-type: infra
+  cainjector:
+    nodeSelector:
+      node-type: infra
+  startupapicheck:
+    nodeSelector:
+      node-type: infra
