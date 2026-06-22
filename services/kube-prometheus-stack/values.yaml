@@ -1,0 +1,122 @@
+kube-prometheus-stack:
+  defaultRules:
+    create: true
+    rules:
+      alertmanager: true
+      etcd: false
+      configReloaders: true
+      general: true
+      nodes: true
+      kubeApiserver: true
+      kubeApiserverAvailability: true
+      kubeApiserverSlos: true
+      kubeProxy: true
+      kubePrometheusGeneral: true
+      kubePrometheusNodeRecording: true
+      kubernetesApps: true
+      kubernetesResources: true
+      kubernetesStorage: true
+      kubernetesSystem: true
+      kubeScheduler: true
+      kubeStateMetrics: true
+      network: true
+      prometheus: true
+      prometheusOperator: true
+
+  alertmanager:
+    enabled: true
+    namespace: monitoring
+    nameOverride: alertmanager
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hosts:
+        - alertmanager.home.arpa
+      tls:
+        - hosts:
+            - alertmanager.home.arpa
+          secretName: alertmanager-tls
+    alertmanagerSpec:
+      storage:
+        volumeClaimTemplate:
+          spec:
+            resources:
+              requests:
+                storage: 512Mi
+      nodeSelector:
+        node-type: infra
+
+  grafana:
+    enabled: true
+    namespace: monitoring
+    nameOverride: grafana
+
+    admin:
+      existingSecret: grafana-admin
+      userKey: admin-user
+      passwordKey: admin-password
+
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hosts:
+        - grafana.home.arpa
+      tls:
+        - hosts:
+            - grafana.home.arpa
+          secretName: grafana-tls
+
+    persistence:
+      enabled: true
+      type: pvc
+      storageClassName: null
+      size: 1Gi
+
+    nodeSelector:
+      node-type: infra
+
+    grafana.ini:
+      server:
+        root_url: "https://grafana.home.arpa"
+
+  prometheus:
+    enabled: true
+    namespace: monitoring
+    nameOverride: prometheus
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hosts:
+        - prometheus.home.arpa
+      tls:
+        - hosts:
+            - prometheus.home.arpa
+          secretName: prometheus-tls
+    prometheusSpec:
+      retention: 30d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            resources:
+              requests:
+                storage: 6Gi
+      nodeSelector:
+        node-type: infra
+
+  kubeStateMetrics:
+    enabled: true
+    nodeSelector:
+      node-type: infra
+
+  nodeExporter:
+    enabled: true
+    nodeSelector:
+      node-type: infra
+
+  prometheusOperator:
+    enabled: true
+    manageCrds: true
+    nodeSelector:
+      node-type: infra
+
+

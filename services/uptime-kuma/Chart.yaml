@@ -1,0 +1,10 @@
+apiVersion: v2
+name: uptime-kuma
+description: Uptime Kuma monitoring application for homelab.
+type: application
+version: 0.1.0
+dependencies:
+  - name: app-template
+    version: 2.6.0
+    repository: https://bjw-s-labs.github.io/helm-charts
+
