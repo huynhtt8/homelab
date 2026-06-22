@@ -9,8 +9,8 @@ docs/
 
 # Secrets
 .env
-*secret*
-!services/*/templates/externalsecret.yaml
+pulumi/secrets.json
+!services/*
 
 /*.md
 !/README.md

@@ -45,6 +45,8 @@ app-template:
           primary: true
           port: 3001
           protocol: HTTP
+        http:
+          enabled: false
   ingress:
     main:
       enabled: true
