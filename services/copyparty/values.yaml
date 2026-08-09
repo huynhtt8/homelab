@@ -84,7 +84,7 @@ app-template:
     main-share:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/share"
+      hostPath: "/mnt/infra-data"
       hostPathType: Directory
       advancedMounts:
         main:
