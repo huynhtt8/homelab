@@ -4,7 +4,7 @@ app-template:
     main:
       pod:
         nodeSelector:
-          node-type: media-worker
+          node-type: infra
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000

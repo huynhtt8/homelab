@@ -2,6 +2,7 @@ app-template:
   fullnameOverride: jellyfin
   controllers:
     main:
+      replicas: 0
       pod:
         nodeSelector:
           node-type: media-worker
