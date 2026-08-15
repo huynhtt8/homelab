@@ -1,4 +1,7 @@
 longhorn:
+  preUpgradeChecker:
+    jobEnabled: false
+    upgradeVersionCheck: false
   persistence:
     defaultClassReplicaCount: 3
     defaultNodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
