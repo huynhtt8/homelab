@@ -2,7 +2,7 @@ app-template:
   fullnameOverride: qbittorrent
   controllers:
     main:
-      replicas: 0
+      replicas: 1
       pod:
         nodeSelector:
           node-type: media-worker
@@ -86,7 +86,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/infra-data/qbittorrent"
-      hostPathType: Directory
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:

@@ -2,7 +2,7 @@ app-template:
   fullnameOverride: jellyfin
   controllers:
     main:
-      replicas: 0
+      replicas: 1
       pod:
         nodeSelector:
           node-type: media-worker
@@ -60,7 +60,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/infra-data/jellyfin/config"
-      hostPathType: Directory
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:
@@ -69,7 +69,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/infra-data/jellyfin/cache"
-      hostPathType: Directory
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:

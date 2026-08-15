@@ -2,7 +2,7 @@ app-template:
   fullnameOverride: prowlarr
   controllers:
     main:
-      replicas: 0
+      replicas: 1
       pod:
         nodeSelector:
           node-type: media-worker
@@ -78,7 +78,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/infra-data/prowlarr"
-      hostPathType: Directory
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:

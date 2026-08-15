@@ -1,0 +1,46 @@
+app-template:
+  fullnameOverride: glance
+  controllers:
+    main:
+      pod:
+        nodeSelector:
+          node-type: infra
+      containers:
+        main:
+          image:
+            repository: glanceapp/glance
+            tag: latest
+          env:
+          - name: TZ
+            value: Asia/Ho_Chi_Minh
+          ports:
+          - name: http
+            containerPort: 8080
+  service:
+    main:
+      enabled: true
+      controller: main
+      type: ClusterIP
+      ports:
+        http:
+          enabled: true
+          primary: true
+          port: 8080
+          protocol: HTTP
+  ingress:
+    main:
+      enabled: true
+      className: traefik
+      annotations: {}
+      tls:
+        - hosts:
+            - glance.home.arpa
+          secretName: glance-tls
+      hosts:
+      - host: glance.home.arpa
+        paths:
+        - path: "/"
+          pathType: Prefix
+          service:
+            name: main
+            port: http

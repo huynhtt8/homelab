@@ -1,19 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: immich
+  name: longhorn
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default
   source:
     repoURL: https://github.com/huynhtt8/homelab.git
     targetRevision: main
-    path: services/immich
+    path: infra/longhorn
   destination:
     server: https://kubernetes.default.svc
-    namespace: immich
+    namespace: longhorn-system
   syncPolicy:
     automated:
       selfHeal: true
