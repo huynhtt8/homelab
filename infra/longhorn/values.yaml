@@ -2,17 +2,29 @@ longhorn:
   preUpgradeChecker:
     jobEnabled: false
     upgradeVersionCheck: false
+  csi:
+    attacherReplicaCount: 1
+    provisionerReplicaCount: 1
+    resizerReplicaCount: 1
+    snapshotterReplicaCount: 1
   persistence:
+    defaultClass: true
     defaultClassReplicaCount: 3
+    reclaimPolicy: Retain
     defaultNodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
   defaultSettings:
+    createDefaultDiskLabeledNodes: true
+    defaultDataPath: /var/lib/longhorn
     defaultReplicaCount: 3
     replicaSoftAntiAffinity: false
     storageMinimalAvailablePercentage: 10
     storageOverProvisioningPercentage: 100
     defaultDataLocality: best-effort
+    upgradeChecker: false
   defaultBackupStore:
     backupTarget: ""
+  longhornUI:
+    replicas: 1
   ingress:
     enabled: false
   service:

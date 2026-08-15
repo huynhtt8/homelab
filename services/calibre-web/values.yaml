@@ -60,7 +60,7 @@ app-template:
     config:
       enabled: true
       type: persistentVolumeClaim
-      storageClass: longhorn-ssd
+      storageClass: longhorn
       size: 128Mi
       accessMode: ReadWriteOnce
       advancedMounts:
@@ -70,7 +70,7 @@ app-template:
     books:
       enabled: true
       type: persistentVolumeClaim
-      storageClass: longhorn-ssd
+      storageClass: longhorn
       size: 2Gi
       accessMode: ReadWriteOnce
       advancedMounts:
@@ -80,7 +80,7 @@ app-template:
     ingest:
       enabled: true
       type: persistentVolumeClaim
-      storageClass: longhorn-ssd
+      storageClass: longhorn
       size: 1Gi
       accessMode: ReadWriteOnce
       advancedMounts:
