@@ -2,140 +2,312 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: stack-configurator-script
-  namespace: argocd
+  namespace: {{ .Release.Namespace }}
 data:
   script.py: |
+    import base64
+    import json
     import os
-    import xml.etree.ElementTree as ET
-    import requests
     import time
+    import xml.etree.ElementTree as ET
 
-    def get_api_key(app_name):
-        config_path = f"/configs/{app_name}/config.xml"
-        if not os.path.exists(config_path):
-            print(f"Waiting for {config_path}...")
-            return None
-        try:
-            tree = ET.parse(config_path)
-            root = tree.getroot()
-            for child in root:
-                if child.tag == 'ApiKey':
-                    return child.text
-        except Exception as e:
-            print(f"Error parsing {config_path}: {e}")
-        return None
+    import requests
+    from kubernetes import client, config
+    from kubernetes.client import ApiException
+    from kubernetes.stream import stream
 
-    def wait_for_app(app_name):
-        for _ in range(30):
-            key = get_api_key(app_name)
-            if key:
-                print(f"Found API key for {app_name}")
-                return key
-            time.sleep(10)
-        raise Exception(f"Timeout waiting for {app_name} config.xml")
-
-    radarr_key = wait_for_app("radarr")
-    sonarr_key = wait_for_app("sonarr")
-    prowlarr_key = wait_for_app("prowlarr")
+    NAMESPACE = os.environ.get("POD_NAMESPACE", "argocd")
 
     RADARR_URL = "http://radarr.radarr.svc.cluster.local:7878"
     SONARR_URL = "http://sonarr.sonarr.svc.cluster.local:8989"
     PROWLARR_URL = "http://prowlarr.prowlarr.svc.cluster.local:9696"
+    QBIT_URL = "http://qbittorrent.qbittorrent.svc.cluster.local:8084"
 
-    def add_app_to_prowlarr(app_name, app_url, app_key, sync_categories):
-        headers = {"X-Api-Key": prowlarr_key}
-        resp = requests.get(f"{PROWLARR_URL}/api/v1/applications", headers=headers)
-        if resp.status_code == 200:
-            existing = [a['name'] for a in resp.json()]
-            if app_name.capitalize() in existing:
-                print(f"{app_name} already in Prowlarr")
-                return
-                
-        payload = {
-            "name": app_name.capitalize(),
-            "syncLevel": "fullSync",
-            "implementation": app_name.capitalize(),
-            "configContract": f"{app_name.capitalize()}Settings",
-            "fields": [
-                {"name": "prowlarrUrl", "value": "http://prowlarr.prowlarr.svc.cluster.local:9696"},
-                {"name": "baseUrl", "value": app_url},
-                {"name": "apiKey", "value": app_key},
-                {"name": "syncCategories", "value": sync_categories}
-            ]
-        }
-        res = requests.post(f"{PROWLARR_URL}/api/v1/applications", json=payload, headers=headers)
-        if res.status_code == 201:
-            print(f"Added {app_name} to Prowlarr")
-        else:
-            print(f"Failed to add {app_name} to Prowlarr: {res.text}")
+    QBIT_USERNAME = os.environ.get("QBIT_USERNAME", "admin")
+    QBIT_SECRET_NAME = os.environ.get("QBIT_SECRET_NAME", "qbit-creds")
+    QBIT_PASSWORD_KEY = os.environ.get("QBIT_PASSWORD_KEY", "password")
+    QBIT_DEFAULT_SAVE_PATH = os.environ.get("QBIT_DEFAULT_SAVE_PATH", "/data/downloads")
+    QBIT_INCOMPLETE_PATH = os.environ.get("QBIT_INCOMPLETE_PATH", "/data/downloads/incomplete")
+    QBIT_CATEGORY_PATHS = {
+        "radarr": os.environ.get("QBIT_RADARR_CATEGORY_PATH", "/data/downloads/radarr"),
+        "sonarr": os.environ.get("QBIT_SONARR_CATEGORY_PATH", "/data/downloads/sonarr"),
+    }
 
-    # For Prowlarr Categories: Radarr uses 2000s, Sonarr uses 5000s
-    add_app_to_prowlarr("radarr", RADARR_URL, radarr_key, [2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060, 2070, 2080])
-    add_app_to_prowlarr("sonarr", SONARR_URL, sonarr_key, [5000, 5010, 5020, 5030, 5040, 5045, 5050, 5060, 5070, 5080])
+    def load_kubernetes():
+        config.load_incluster_config()
+        return client.CoreV1Api(), client.CustomObjectsApi()
 
-    def add_qbit_to_app(app_name, url, key):
-        headers = {"X-Api-Key": key}
-        resp = requests.get(f"{url}/api/v3/downloadclient", headers=headers)
-        if resp.status_code == 200:
-            if any(c['name'] == 'qBittorrent' for c in resp.json()):
-                print(f"qBittorrent already in {app_name}")
-                return
-                
-        qbit_user = os.environ.get("QBIT_USERNAME", "admin")
-        qbit_pass = os.environ.get("QBIT_PASSWORD")
-        
-        if not qbit_pass:
-            print(f"Skipping qBittorrent setup for {app_name}: QBIT_PASSWORD env var not set.")
+    core_v1, custom_objects = load_kubernetes()
+
+    def ensure_external_secret():
+        if os.environ.get("EXTERNAL_SECRET_ENABLED", "true").lower() != "true":
             return
 
-        payload = {
+        name = os.environ.get("EXTERNAL_SECRET_NAME", QBIT_SECRET_NAME)
+        secret_store_name = os.environ.get("SECRET_STORE_NAME", "central-secrets")
+        remote_secret_name = os.environ.get("REMOTE_SECRET_NAME", QBIT_SECRET_NAME)
+        remote_password_property = os.environ.get("REMOTE_PASSWORD_PROPERTY", QBIT_PASSWORD_KEY)
+
+        body = {
+            "apiVersion": "external-secrets.io/v1beta1",
+            "kind": "ExternalSecret",
+            "metadata": {"name": name, "namespace": NAMESPACE},
+            "spec": {
+                "refreshInterval": "1h",
+                "secretStoreRef": {
+                    "kind": "ClusterSecretStore",
+                    "name": secret_store_name,
+                },
+                "target": {
+                    "name": QBIT_SECRET_NAME,
+                    "creationPolicy": "Owner",
+                },
+                "data": [
+                    {
+                        "secretKey": QBIT_PASSWORD_KEY,
+                        "remoteRef": {
+                            "key": remote_secret_name,
+                            "property": remote_password_property,
+                        },
+                    }
+                ],
+            },
+        }
+
+        try:
+            custom_objects.create_namespaced_custom_object(
+                "external-secrets.io", "v1beta1", NAMESPACE, "externalsecrets", body
+            )
+            print(f"Created ExternalSecret {NAMESPACE}/{name}")
+        except ApiException as exc:
+            if exc.status != 409:
+                raise
+            custom_objects.patch_namespaced_custom_object(
+                "external-secrets.io", "v1beta1", NAMESPACE, "externalsecrets", name, body
+            )
+            print(f"Patched ExternalSecret {NAMESPACE}/{name}")
+
+    def wait_for_secret_value(name, key):
+        for _ in range(60):
+            try:
+                secret = core_v1.read_namespaced_secret(name, NAMESPACE)
+                if secret.data and secret.data.get(key):
+                    return base64.b64decode(secret.data[key]).decode()
+            except ApiException as exc:
+                if exc.status != 404:
+                    raise
+            print(f"Waiting for Secret {NAMESPACE}/{name} key {key}...")
+            time.sleep(5)
+        raise RuntimeError(f"Timed out waiting for Secret {NAMESPACE}/{name} key {key}")
+
+    def exec_in_app_pod(namespace, command):
+        pods = core_v1.list_namespaced_pod(
+            namespace, label_selector=f"app.kubernetes.io/name={namespace}"
+        ).items
+        ready_pods = [
+            pod for pod in pods
+            if pod.status.phase == "Running"
+            and any((condition.type == "Ready" and condition.status == "True")
+                    for condition in (pod.status.conditions or []))
+        ]
+        if not ready_pods:
+            raise RuntimeError(f"No ready pod found in namespace {namespace}")
+
+        pod_name = ready_pods[0].metadata.name
+        return stream(
+            core_v1.connect_get_namespaced_pod_exec,
+            pod_name,
+            namespace,
+            command=command,
+            container="main",
+            stderr=True,
+            stdin=False,
+            stdout=True,
+            tty=False,
+            _request_timeout=30,
+        )
+
+    def get_api_key(app_name):
+        output = exec_in_app_pod(app_name, ["sh", "-c", "cat /config/config.xml"])
+        root = ET.fromstring(output)
+        api_key = root.findtext("ApiKey")
+        if not api_key:
+            raise RuntimeError(f"No ApiKey found in {app_name} config.xml")
+        return api_key
+
+    def wait_for_api_key(app_name):
+        for _ in range(60):
+            try:
+                key = get_api_key(app_name)
+                print(f"Found API key for {app_name}")
+                return key
+            except Exception as exc:
+                print(f"Waiting for {app_name} API key: {exc}")
+                time.sleep(5)
+        raise RuntimeError(f"Timed out waiting for {app_name} API key")
+
+    def api_request(method, base_url, api_key, path, **kwargs):
+        headers = kwargs.pop("headers", {})
+        headers["X-Api-Key"] = api_key
+        response = requests.request(
+            method, f"{base_url}{path}", headers=headers, timeout=30, **kwargs
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(
+                f"{method} {base_url}{path} failed: {response.status_code} {response.text}"
+            )
+        return response
+
+    def merge_fields(existing_fields, desired_fields):
+        merged = {field["name"]: field for field in existing_fields or []}
+        for field in desired_fields:
+            merged[field["name"]] = field
+        return list(merged.values())
+
+    def add_or_update_prowlarr_app(app_name, app_url, app_key, sync_categories, prowlarr_key):
+        headers = {"X-Api-Key": prowlarr_key}
+        applications = requests.get(
+            f"{PROWLARR_URL}/api/v1/applications", headers=headers, timeout=30
+        ).json()
+        existing = next(
+            (app for app in applications if app.get("name", "").lower() == app_name),
+            None,
+        )
+
+        display_name = app_name.capitalize()
+        desired_fields = [
+            {"name": "prowlarrUrl", "value": PROWLARR_URL},
+            {"name": "baseUrl", "value": app_url},
+            {"name": "apiKey", "value": app_key},
+            {"name": "syncCategories", "value": sync_categories},
+        ]
+        payload = dict(existing or {})
+        payload.update({
+            "name": display_name,
+            "syncLevel": "fullSync",
+            "implementation": display_name,
+            "configContract": f"{display_name}Settings",
+            "fields": merge_fields((existing or {}).get("fields"), desired_fields),
+        })
+
+        if existing:
+            api_request(
+                "PUT", PROWLARR_URL, prowlarr_key,
+                f"/api/v1/applications/{existing['id']}", json=payload
+            )
+            print(f"Updated {display_name} in Prowlarr")
+        else:
+            api_request("POST", PROWLARR_URL, prowlarr_key, "/api/v1/applications", json=payload)
+            print(f"Added {display_name} to Prowlarr")
+
+    def add_or_update_qbit_download_client(app_name, app_url, app_key, qbit_password):
+        clients = api_request("GET", app_url, app_key, "/api/v3/downloadclient").json()
+        existing = next((client for client in clients if client.get("name") == "qBittorrent"), None)
+
+        desired_fields = [
+            {"name": "host", "value": "qbittorrent.qbittorrent.svc.cluster.local"},
+            {"name": "port", "value": 8084},
+            {"name": "username", "value": QBIT_USERNAME},
+            {"name": "password", "value": qbit_password},
+            {"name": "category", "value": app_name},
+            {"name": "useSsl", "value": False},
+        ]
+        payload = dict(existing or {})
+        payload.update({
             "enable": True,
             "protocol": "torrent",
             "priority": 1,
             "name": "qBittorrent",
             "implementation": "QBittorrent",
             "configContract": "QBittorrentSettings",
-            "fields": [
-                {"name": "host", "value": "qbittorrent.qbittorrent.svc.cluster.local"},
-                {"name": "port", "value": 8084},
-                {"name": "username", "value": qbit_user},
-                {"name": "password", "value": qbit_pass},
-                {"name": "category", "value": app_name},
-                {"name": "useSsl", "value": False}
-            ]
-        }
-        res = requests.post(f"{url}/api/v3/downloadclient", json=payload, headers=headers)
-        if res.status_code == 201:
-            print(f"Added qBittorrent to {app_name}")
+            "fields": merge_fields((existing or {}).get("fields"), desired_fields),
+        })
+
+        if existing:
+            api_request("PUT", app_url, app_key, f"/api/v3/downloadclient/{existing['id']}", json=payload)
+            print(f"Updated qBittorrent in {app_name}")
         else:
-            print(f"Failed to add qBittorrent to {app_name}: {res.text}")
+            api_request("POST", app_url, app_key, "/api/v3/downloadclient", json=payload)
+            print(f"Added qBittorrent to {app_name}")
 
-    add_qbit_to_app("radarr", RADARR_URL, radarr_key)
-    add_qbit_to_app("sonarr", SONARR_URL, sonarr_key)
-
-    def set_qbit_preferences():
-        qbit_user = os.environ.get("QBIT_USERNAME", "admin")
-        qbit_pass = os.environ.get("QBIT_PASSWORD")
-        if not qbit_pass:
+    def ensure_root_folder(app_name, app_url, app_key, path):
+        roots = api_request("GET", app_url, app_key, "/api/v3/rootfolder").json()
+        if any(root.get("path") == path for root in roots):
+            print(f"{app_name} root folder already exists: {path}")
             return
-            
-        try:
-            login_data = {'username': qbit_user, 'password': qbit_pass}
-            session = requests.Session()
-            res = session.post("http://qbittorrent.qbittorrent.svc.cluster.local:8084/api/v2/auth/login", data=login_data)
-            if res.status_code in (200, 204) and res.text in ('Ok.', ''):
-                import json
-                prefs = {"save_path": "/data/downloads"}
-                res = session.post("http://qbittorrent.qbittorrent.svc.cluster.local:8084/api/v2/app/setPreferences", data={"json": json.dumps(prefs)})
-                if res.status_code == 200:
-                    print("Set qBittorrent default save path to /data/downloads")
-                else:
-                    print(f"Failed to set qBittorrent prefs: {res.text}")
-            else:
-                print(f"Failed to login to qBittorrent: {res.status_code} {res.text}")
-        except Exception as e:
-            print(f"Could not connect to qBittorrent to set preferences: {e}")
+        api_request("POST", app_url, app_key, "/api/v3/rootfolder", json={"path": path})
+        print(f"Added {app_name} root folder: {path}")
 
-    set_qbit_preferences()
+    def configure_qbit(qbit_password):
+        session = requests.Session()
+        headers = {"Host": "localhost:8084", "Referer": "http://localhost:8084/"}
+        response = session.post(
+            f"{QBIT_URL}/api/v2/auth/login",
+            data={"username": QBIT_USERNAME, "password": qbit_password},
+            headers=headers,
+            timeout=30,
+        )
+        if response.status_code not in (200, 204):
+            raise RuntimeError(f"Failed to login to qBittorrent: {response.status_code} {response.text}")
 
-    print("Stack Configuration Complete!")
+        preferences = {
+            "save_path": QBIT_DEFAULT_SAVE_PATH,
+            "temp_path": QBIT_INCOMPLETE_PATH,
+        }
+        response = session.post(
+            f"{QBIT_URL}/api/v2/app/setPreferences",
+            data={"json": json.dumps(preferences)},
+            headers=headers,
+            timeout=30,
+        )
+        if response.status_code != 200:
+            raise RuntimeError(f"Failed to set qBittorrent preferences: {response.status_code} {response.text}")
+
+        for category, save_path in QBIT_CATEGORY_PATHS.items():
+            session.post(
+                f"{QBIT_URL}/api/v2/torrents/createCategory",
+                data={"category": category, "savePath": save_path},
+                headers=headers,
+                timeout=30,
+            )
+            response = session.post(
+                f"{QBIT_URL}/api/v2/torrents/editCategory",
+                data={"category": category, "savePath": save_path},
+                headers=headers,
+                timeout=30,
+            )
+            if response.status_code != 200:
+                raise RuntimeError(f"Failed to set qBittorrent category {category}: {response.status_code} {response.text}")
+            print(f"Set qBittorrent category {category} to {save_path}")
+
+        print(f"Set qBittorrent default save path to {QBIT_DEFAULT_SAVE_PATH}")
+
+    ensure_external_secret()
+    qbit_password = wait_for_secret_value(QBIT_SECRET_NAME, QBIT_PASSWORD_KEY)
+
+    radarr_key = wait_for_api_key("radarr")
+    sonarr_key = wait_for_api_key("sonarr")
+    prowlarr_key = wait_for_api_key("prowlarr")
+
+    add_or_update_prowlarr_app(
+        "radarr",
+        RADARR_URL,
+        radarr_key,
+        [2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060, 2070, 2080],
+        prowlarr_key,
+    )
+    add_or_update_prowlarr_app(
+        "sonarr",
+        SONARR_URL,
+        sonarr_key,
+        [5000, 5010, 5020, 5030, 5040, 5045, 5050, 5060, 5070, 5080],
+        prowlarr_key,
+    )
+
+    add_or_update_qbit_download_client("radarr", RADARR_URL, radarr_key, qbit_password)
+    add_or_update_qbit_download_client("sonarr", SONARR_URL, sonarr_key, qbit_password)
+    ensure_root_folder("radarr", RADARR_URL, radarr_key, "/data/movies")
+    ensure_root_folder("sonarr", SONARR_URL, sonarr_key, "/data/tv")
+    configure_qbit(qbit_password)
+
+    print("Stack configuration complete")

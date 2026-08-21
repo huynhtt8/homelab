@@ -2,46 +2,52 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: stack-configurator
-  namespace: argocd
+  namespace: {{ .Release.Namespace }}
   annotations:
     argocd.argoproj.io/hook: PostSync
 spec:
   template:
     spec:
+      serviceAccountName: stack-configurator
       restartPolicy: OnFailure
       containers:
         - name: configurator
           image: python:3.11-alpine
-          command: ["/bin/sh", "-c", "pip install requests && python /app/script.py"]
+          command: ["/bin/sh", "-c", "pip install kubernetes requests && python /app/script.py"]
           env:
-            - name: QBIT_USERNAME
-              value: "admin"
-            - name: QBIT_PASSWORD
+            - name: POD_NAMESPACE
               valueFrom:
-                secretKeyRef:
-                  name: qbit-creds
-                  key: password
-                  optional: true
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: QBIT_USERNAME
+              value: {{ .Values.qbit.username | quote }}
+            - name: QBIT_SECRET_NAME
+              value: {{ .Values.qbit.secretName | quote }}
+            - name: QBIT_PASSWORD_KEY
+              value: {{ .Values.qbit.passwordKey | quote }}
+            - name: QBIT_DEFAULT_SAVE_PATH
+              value: {{ .Values.qbit.defaultSavePath | quote }}
+            - name: QBIT_INCOMPLETE_PATH
+              value: {{ .Values.qbit.incompletePath | quote }}
+            - name: QBIT_RADARR_CATEGORY_PATH
+              value: {{ index .Values.qbit.categories "radarr" | quote }}
+            - name: QBIT_SONARR_CATEGORY_PATH
+              value: {{ index .Values.qbit.categories "sonarr" | quote }}
+            - name: EXTERNAL_SECRET_ENABLED
+              value: {{ .Values.externalSecret.enabled | quote }}
+            - name: EXTERNAL_SECRET_NAME
+              value: {{ .Values.externalSecret.name | quote }}
+            - name: SECRET_STORE_NAME
+              value: {{ .Values.externalSecret.secretStoreName | quote }}
+            - name: REMOTE_SECRET_NAME
+              value: {{ .Values.externalSecret.remoteSecretName | quote }}
+            - name: REMOTE_PASSWORD_PROPERTY
+              value: {{ .Values.externalSecret.remotePasswordProperty | quote }}
           volumeMounts:
             - name: script
               mountPath: /app/script.py
               subPath: script.py
-            - name: radarr-config
-              mountPath: /configs/radarr
-            - name: sonarr-config
-              mountPath: /configs/sonarr
-            - name: prowlarr-config
-              mountPath: /configs/prowlarr
       volumes:
         - name: script
           configMap:
             name: stack-configurator-script
-        - name: radarr-config
-          persistentVolumeClaim:
-            claimName: radarr-main-config
-        - name: sonarr-config
-          persistentVolumeClaim:
-            claimName: sonarr-main-config
-        - name: prowlarr-config
-          persistentVolumeClaim:
-            claimName: prowlarr-main-config

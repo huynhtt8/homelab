@@ -1,1 +1,16 @@
-# No values needed, everything is hardcoded in templates for now
+externalSecret:
+  enabled: true
+  name: qbit-creds
+  secretStoreName: central-secrets
+  remoteSecretName: qbit-creds
+  remotePasswordProperty: password
+
+qbit:
+  username: admin
+  secretName: qbit-creds
+  passwordKey: password
+  defaultSavePath: /data/downloads
+  incompletePath: /data/downloads/incomplete
+  categories:
+    radarr: /data/downloads/radarr
+    sonarr: /data/downloads/sonarr
