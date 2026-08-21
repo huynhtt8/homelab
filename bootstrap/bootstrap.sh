@@ -103,6 +103,7 @@ if [ "${K3S_ROLE}" = "server" ]; then
 
   echo "=== Labeling local node as infra ==="
   kubectl label node "${K3S_NODE_NAME}" node-type=infra --overwrite
+  kubectl label node "${K3S_NODE_NAME}" node.longhorn.io/create-default-disk=true --overwrite
 
   echo "=== Installing Helm (if needed) ==="
   if ! command -v helm &>/dev/null; then
