@@ -68,7 +68,7 @@ app-template:
       enabled: true
       type: persistentVolumeClaim
       storageClass: longhorn
-      size: 2Gi
+      size: 5Gi
       accessMode: ReadWriteOnce
       advancedMounts:
         main:
