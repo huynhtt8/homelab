@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   secretName: prowlarr-tls
-  commonName: prowlarr.home.arpa
+  commonName: prowlarr.homelab.com
   dnsNames:
-    - prowlarr.home.arpa
+    - prowlarr.homelab.com
   issuerRef:
     name: homelab-ca
     kind: ClusterIssuer

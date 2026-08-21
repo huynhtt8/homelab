@@ -54,10 +54,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - uptime.home.arpa
+            - uptime.homelab.com
           secretName: uptime-kuma-tls
       hosts:
-      - host: uptime.home.arpa
+      - host: uptime.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
@@ -67,11 +67,11 @@ app-template:
   persistence:
     main-config:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/uptime-kuma"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 2Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:
           - path: "/app/data"
-

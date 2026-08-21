@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   secretName: jellyfin-tls
-  commonName: jellyfin.home.arpa
+  commonName: jellyfin.homelab.com
   dnsNames:
-    - jellyfin.home.arpa
+    - jellyfin.homelab.com
   issuerRef:
     name: homelab-ca
     kind: ClusterIssuer

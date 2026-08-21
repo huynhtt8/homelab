@@ -21,7 +21,7 @@ K3S_NODE_EXTERNAL_IP="${K3S_NODE_EXTERNAL_IP:-${K3S_NODE_IP}}"
 K3S_SERVER_URL="${K3S_SERVER_URL:-}"
 K3S_TOKEN="${K3S_TOKEN:-}"
 K3S_FLANNEL_EXTERNAL_IP="${K3S_FLANNEL_EXTERNAL_IP:-true}"
-K3S_DISABLE="${K3S_DISABLE:-traefik,servicelb}"
+K3S_DISABLE="${K3S_DISABLE:-traefik}"
 K3S_WRITE_KUBECONFIG_MODE="${K3S_WRITE_KUBECONFIG_MODE:-0644}"
 # Extra addresses (Tailscale IP / MagicDNS name) remote clients use to reach the
 # API server. Space-separated; the first is also used in the exported kubeconfig.

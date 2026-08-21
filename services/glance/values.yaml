@@ -35,10 +35,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - glance.home.arpa
+            - glance.homelab.com
           secretName: glance-tls
       hosts:
-      - host: glance.home.arpa
+      - host: glance.homelab.com
         paths:
         - path: "/"
           pathType: Prefix

@@ -46,10 +46,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - library.home.arpa
+            - library.homelab.com
           secretName: calibre-web-tls
       hosts:
-      - host: library.home.arpa
+      - host: library.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
@@ -59,27 +59,30 @@ app-template:
   persistence:
     config:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/calibre-web"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 1Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:
           - path: "/config"
     books:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/library/books"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 20Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:
           - path: "/calibre-library"
     ingest:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/library/books-ingest"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 5Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:

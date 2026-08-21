@@ -43,10 +43,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - audiobook.home.arpa
+            - audiobook.homelab.com
           secretName: audiobookshelf-tls
       hosts:
-      - host: audiobook.home.arpa
+      - host: audiobook.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
@@ -56,27 +56,30 @@ app-template:
   persistence:
     main-library:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/audiobooks"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 20Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:
           - path: "/library"
     main-config:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/audiobookshelf/config"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 1Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:
           - path: "/config"
     main-metadata:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/audiobookshelf/metadata"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 5Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:

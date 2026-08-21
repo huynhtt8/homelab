@@ -48,10 +48,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - radarr.home.arpa
+            - radarr.homelab.com
           secretName: radarr-tls
       hosts:
-      - host: radarr.home.arpa
+      - host: radarr.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
@@ -61,9 +61,10 @@ app-template:
   persistence:
     main-config:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/radarr"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 1Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:

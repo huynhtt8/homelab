@@ -152,10 +152,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - immich.home.arpa
+            - immich.homelab.com
           secretName: immich-tls
       hosts:
-      - host: immich.home.arpa
+      - host: immich.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
@@ -165,9 +165,10 @@ app-template:
   persistence:
     server-upload:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/immich"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 50Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         server:
           main:
@@ -184,9 +185,10 @@ app-template:
             readOnly: true
     postgres-data:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/immich/postgres"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 20Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         postgres:
           main:

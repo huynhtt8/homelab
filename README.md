@@ -109,28 +109,29 @@ Node placement:
 | Node label | Workloads |
 |------|-----------|
 | `node-type=infra` | Traefik, cert-manager, External Secrets, and other lightweight controllers |
-| `node-type=media-worker` | All services that mount hostPath data (`/mnt/media`, `/mnt/infa`) |
+| `node-type=media-worker` | Services that mount the shared media hostPath (`/mnt/media`) |
 
 Host mounts used by the media services:
 
 | Path | Purpose |
 |------|---------|
 | `/mnt/media` | Combined HDD media pool for tv, movies, downloads |
-| `/mnt/infa/<service>` | SSD-backed service configs and app databases |
+| Longhorn PVCs | Service configs and app databases |
 
 The two 500GB HDDs are mounted below `/mnt/media-a` and `/mnt/media-b`, then
 combined at `/mnt/media` with mergerfs. Kubernetes workloads should only use
-`/mnt/media` and `/mnt/infa`, not disk-specific paths.
+`/mnt/media` for shared media and Longhorn PVCs for app state, not disk-specific
+paths.
 
 ## DNS
 
-All services use `*.home.arpa` hostnames (RFC 8375). Configure resolution via:
-- AdGuard: wildcard `*.home.arpa → SERVER_IP`
+All services use `*.homelab.com` hostnames (RFC 8375). Configure resolution via:
+- AdGuard: wildcard `*.homelab.com → SERVER_IP`
 - Or per-device `/etc/hosts`
 
 ## Teardown
 
-Removes K3s and all cluster state. Service data on `/mnt/infa` and `/mnt/media` is **not** touched.
+Removes K3s and all cluster state. Service data on `/mnt/media` is **not** touched.
 
 ```sh
 make teardown

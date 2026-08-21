@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   secretName: sonarr-tls
-  commonName: sonarr.home.arpa
+  commonName: sonarr.homelab.com
   dnsNames:
-    - sonarr.home.arpa
+    - sonarr.homelab.com
   issuerRef:
     name: homelab-ca
     kind: ClusterIssuer

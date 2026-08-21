@@ -48,10 +48,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - bazarr.home.arpa
+            - bazarr.homelab.com
           secretName: bazarr-tls
       hosts:
-      - host: bazarr.home.arpa
+      - host: bazarr.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
@@ -61,9 +61,10 @@ app-template:
   persistence:
     main-config:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/bazarr"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 1Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:

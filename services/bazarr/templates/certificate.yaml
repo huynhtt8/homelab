@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   secretName: bazarr-tls
-  commonName: bazarr.home.arpa
+  commonName: bazarr.homelab.com
   dnsNames:
-    - bazarr.home.arpa
+    - bazarr.homelab.com
   issuerRef:
     name: homelab-ca
     kind: ClusterIssuer

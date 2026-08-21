@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   secretName: calibre-web-tls
-  commonName: library.home.arpa
+  commonName: library.homelab.com
   dnsNames:
-    - library.home.arpa
+    - library.homelab.com
   issuerRef:
     name: homelab-ca
     kind: ClusterIssuer

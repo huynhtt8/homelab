@@ -71,10 +71,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - qbittorrent.home.arpa
+            - qbittorrent.homelab.com
           secretName: qbittorrent-tls
       hosts:
-      - host: qbittorrent.home.arpa
+      - host: qbittorrent.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
@@ -84,9 +84,10 @@ app-template:
   persistence:
     main-config:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/qbittorrent"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 1Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:

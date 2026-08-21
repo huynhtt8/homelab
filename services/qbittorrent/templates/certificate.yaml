@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   secretName: qbittorrent-tls
-  commonName: qbittorrent.home.arpa
+  commonName: qbittorrent.homelab.com
   dnsNames:
-    - qbittorrent.home.arpa
+    - qbittorrent.homelab.com
   issuerRef:
     name: homelab-ca
     kind: ClusterIssuer

@@ -26,13 +26,22 @@ spec:
             - name: script
               mountPath: /app/script.py
               subPath: script.py
-            - name: infra-data
-              mountPath: /mnt/infa
+            - name: radarr-config
+              mountPath: /configs/radarr
+            - name: sonarr-config
+              mountPath: /configs/sonarr
+            - name: prowlarr-config
+              mountPath: /configs/prowlarr
       volumes:
         - name: script
           configMap:
             name: stack-configurator-script
-        - name: infra-data
-          hostPath:
-            path: /mnt/infa
-            type: Directory
+        - name: radarr-config
+          persistentVolumeClaim:
+            claimName: radarr-main-config
+        - name: sonarr-config
+          persistentVolumeClaim:
+            claimName: sonarr-main-config
+        - name: prowlarr-config
+          persistentVolumeClaim:
+            claimName: prowlarr-main-config

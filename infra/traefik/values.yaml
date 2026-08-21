@@ -15,7 +15,7 @@ traefik:
     kubernetesIngress:
       enabled: true
       ingressEndpoint:
-        hostname: traefik.home.arpa
+        hostname: traefik.homelab.com
   ports:
     web:
       http:

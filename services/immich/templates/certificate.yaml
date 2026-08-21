@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   secretName: immich-tls
-  commonName: immich.home.arpa
+  commonName: immich.homelab.com
   dnsNames:
-    - immich.home.arpa
+    - immich.homelab.com
   issuerRef:
     name: homelab-ca
     kind: ClusterIssuer

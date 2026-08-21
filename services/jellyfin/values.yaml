@@ -45,10 +45,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - jellyfin.home.arpa
+            - jellyfin.homelab.com
           secretName: jellyfin-tls
       hosts:
-      - host: jellyfin.home.arpa
+      - host: jellyfin.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
@@ -58,18 +58,20 @@ app-template:
   persistence:
     main-config:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/jellyfin/config"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 2Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:
           - path: "/config"
     main-cache:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/infa/jellyfin/cache"
-      hostPathType: DirectoryOrCreate
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 10Gi
+      accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:
