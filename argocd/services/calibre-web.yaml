@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/huynhtt8/homelab.git
-    targetRevision: main
+    targetRevision: feature/worker-control-plane
     path: services/calibre-web
   destination:
     server: https://kubernetes.default.svc
