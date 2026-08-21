@@ -46,10 +46,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - library.homelab.com
+            - calibre-web.homelab.com
           secretName: calibre-web-tls
       hosts:
-      - host: library.homelab.com
+      - host: calibre-web.homelab.com
         paths:
         - path: "/"
           pathType: Prefix

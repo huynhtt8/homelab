@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   secretName: audiobookshelf-tls
-  commonName: audiobook.homelab.com
+  commonName: audiobookshelf.homelab.com
   dnsNames:
-    - audiobook.homelab.com
+    - audiobookshelf.homelab.com
   issuerRef:
     name: homelab-ca
     kind: ClusterIssuer

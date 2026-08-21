@@ -47,6 +47,10 @@ make bootstrap
 
 This installs K3s and ArgoCD.
 
+K3s ServiceLB is left enabled by default. The bootstrap script disables the
+bundled K3s Traefik only, while the repo-managed Traefik chart exposes a
+`LoadBalancer` service that ServiceLB can advertise on the local network.
+
 To also make the API reachable from other machines (e.g. your Mac over
 Tailscale) and export a ready-to-use kubeconfig, set `TLS_SANS` (space-separated;
 the first entry is used in the exported kubeconfig). Keep the Tailnet IP and
@@ -98,7 +102,7 @@ git add -A && git commit -m 'chore: update jellyfin' && git push
 ## Adding a New Service
 
 1. Create `services/<name>/Chart.yaml` (use `app-template` v2.6.0)
-2. Create `services/<name>/values.yaml` (image, ports, ingress host, hostPath mounts)
+2. Create `services/<name>/values.yaml` (image, ports, ingress host, Longhorn PVCs)
 3. Create `argocd/services/<name>.yaml` (ArgoCD Application, wave 2)
 4. `make validate` → commit → push
 
@@ -116,16 +120,23 @@ Host mounts used by the media services:
 | Path | Purpose |
 |------|---------|
 | `/mnt/media` | Combined HDD media pool for tv, movies, downloads |
-| Longhorn PVCs | Service configs and app databases |
+| Longhorn PVCs | Service configs, app databases, metadata, and app-owned files |
 
 The two 500GB HDDs are mounted below `/mnt/media-a` and `/mnt/media-b`, then
 combined at `/mnt/media` with mergerfs. Kubernetes workloads should only use
 `/mnt/media` for shared media and Longhorn PVCs for app state, not disk-specific
-paths.
+paths. Media hostPaths intentionally do not use `DirectoryOrCreate`, so a pod
+will not create an empty media tree when scheduled onto a node that is not
+prepared for media.
+
+Copyparty currently uses Longhorn RWO PVCs and should run as a single replica.
+For active multi-replica Copyparty across nodes, move the share volume to RWX
+storage such as NFS or SMB and mount that claim at `/w`.
 
 ## DNS
 
-All services use `*.homelab.com` hostnames (RFC 8375). Configure resolution via:
+All services use service-name `*.homelab.com` hostnames (RFC 8375), such as
+`sonarr.homelab.com` and `calibre-web.homelab.com`. Configure resolution via:
 - AdGuard: wildcard `*.homelab.com → SERVER_IP`
 - Or per-device `/etc/hosts`
 

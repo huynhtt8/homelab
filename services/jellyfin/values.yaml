@@ -5,7 +5,7 @@ app-template:
       replicas: 1
       pod:
         nodeSelector:
-          node-type: infra
+          node-type: media-worker
       containers:
         main:
           image:
@@ -80,7 +80,7 @@ app-template:
       enabled: true
       type: hostPath
       hostPath: "/mnt/media"
-      hostPathType: Directory
+      hostPathType: ""
       advancedMounts:
         main:
           main:

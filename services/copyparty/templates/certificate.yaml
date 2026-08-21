@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   secretName: copyparty-tls
-  commonName: share.homelab.com
+  commonName: copyparty.homelab.com
   dnsNames:
-    - share.homelab.com
+    - copyparty.homelab.com
   issuerRef:
     name: homelab-ca
     kind: ClusterIssuer

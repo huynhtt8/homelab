@@ -22,6 +22,7 @@ K3S_SERVER_URL="${K3S_SERVER_URL:-}"
 K3S_TOKEN="${K3S_TOKEN:-}"
 K3S_FLANNEL_EXTERNAL_IP="${K3S_FLANNEL_EXTERNAL_IP:-true}"
 K3S_DISABLE="${K3S_DISABLE:-traefik}"
+K3S_ENABLE_SERVICELB="${K3S_ENABLE_SERVICELB:-true}"
 K3S_WRITE_KUBECONFIG_MODE="${K3S_WRITE_KUBECONFIG_MODE:-0644}"
 # Extra addresses (Tailscale IP / MagicDNS name) remote clients use to reach the
 # API server. Space-separated; the first is also used in the exported kubeconfig.
@@ -52,11 +53,22 @@ chmod 700 /etc/rancher/k3s
   echo "node-external-ip: ${K3S_NODE_EXTERNAL_IP}"
   echo "write-kubeconfig-mode: \"${K3S_WRITE_KUBECONFIG_MODE}\""
   if [ "${K3S_ROLE}" = "server" ]; then
-    echo "disable:"
     IFS=',' read -ra DISABLED_COMPONENTS <<< "${K3S_DISABLE}"
+    EFFECTIVE_DISABLED_COMPONENTS=()
     for component in "${DISABLED_COMPONENTS[@]}"; do
-      echo "  - ${component}"
+      component="$(echo "${component}" | xargs)"
+      [ -n "${component}" ] || continue
+      if [ "${K3S_ENABLE_SERVICELB}" = "true" ] && [ "${component}" = "servicelb" ]; then
+        continue
+      fi
+      EFFECTIVE_DISABLED_COMPONENTS+=("${component}")
     done
+    if [ "${#EFFECTIVE_DISABLED_COMPONENTS[@]}" -gt 0 ]; then
+      echo "disable:"
+      for component in "${EFFECTIVE_DISABLED_COMPONENTS[@]}"; do
+        echo "  - ${component}"
+      done
+    fi
     echo "flannel-external-ip: ${K3S_FLANNEL_EXTERNAL_IP}"
     if [ -n "${TLS_SANS}" ]; then
       echo "tls-san:"

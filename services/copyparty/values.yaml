@@ -1,14 +1,18 @@
 app-template:
-  fullnameOverride: uptime-kuma
+  fullnameOverride: copyparty
   controllers:
     main:
+      replicas: 1
       pod:
         nodeSelector:
           node-type: infra
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
       containers:
         main:
           image:
-            repository: louislam/uptime-kuma
+            repository: copyparty/ac
             tag: latest
           probes:
             liveness:
@@ -16,37 +20,38 @@ app-template:
               custom: true
               spec:
                 httpGet:
-                  path: /
-                  port: 3001
+                  path: "/"
+                  port: http
                 initialDelaySeconds: 30
-                periodSeconds: 10
+                periodSeconds: 60
             readiness:
               enabled: true
               custom: true
               spec:
                 httpGet:
-                  path: /
-                  port: 3001
-                initialDelaySeconds: 10
-                periodSeconds: 10
+                  path: "/"
+                  port: http
+                initialDelaySeconds: 15
+                periodSeconds: 60
             startup:
               enabled: false
+          env:
+          - name: TZ
+            value: Asia/Ho_Chi_Minh
           ports:
-          - name: web
-            containerPort: 3001
+          - name: http
+            containerPort: 3923
   service:
     main:
       enabled: true
       controller: main
       type: ClusterIP
       ports:
-        web:
+        http:
           enabled: true
           primary: true
-          port: 3001
+          port: 3923
           protocol: HTTP
-        http:
-          enabled: false
   ingress:
     main:
       enabled: true
@@ -54,24 +59,34 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - uptime.homelab.com
-          secretName: uptime-kuma-tls
+            - copyparty.homelab.com
+          secretName: copyparty-tls
       hosts:
-      - host: uptime.homelab.com
+      - host: copyparty.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
           service:
             name: main
-            port: web
+            port: http
   persistence:
     main-config:
       enabled: true
       type: persistentVolumeClaim
       storageClass: longhorn
-      size: 2Gi
+      size: 1Gi
       accessMode: ReadWriteOnce
       advancedMounts:
         main:
           main:
-          - path: "/app/data"
+          - path: "/cfg"
+    main-share:
+      enabled: true
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 20Gi
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        main:
+          main:
+          - path: "/w"

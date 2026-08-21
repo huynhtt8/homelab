@@ -43,10 +43,10 @@ app-template:
       annotations: {}
       tls:
         - hosts:
-            - audiobook.homelab.com
+            - audiobookshelf.homelab.com
           secretName: audiobookshelf-tls
       hosts:
-      - host: audiobook.homelab.com
+      - host: audiobookshelf.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
