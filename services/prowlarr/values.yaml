@@ -77,7 +77,7 @@ app-template:
     main-config:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/prowlarr"
+      hostPath: "/mnt/infa/prowlarr"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:

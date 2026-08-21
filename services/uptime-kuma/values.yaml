@@ -68,7 +68,7 @@ app-template:
     main-config:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/uptime-kuma"
+      hostPath: "/mnt/infa/uptime-kuma"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:

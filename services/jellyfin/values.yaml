@@ -59,7 +59,7 @@ app-template:
     main-config:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/jellyfin/config"
+      hostPath: "/mnt/infa/jellyfin/config"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
@@ -68,7 +68,7 @@ app-template:
     main-cache:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/jellyfin/cache"
+      hostPath: "/mnt/infa/jellyfin/cache"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:

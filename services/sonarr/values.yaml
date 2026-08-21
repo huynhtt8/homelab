@@ -62,7 +62,7 @@ app-template:
     main-config:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/sonarr"
+      hostPath: "/mnt/infa/sonarr"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:

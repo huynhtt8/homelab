@@ -62,7 +62,7 @@ app-template:
     main-config:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/radarr"
+      hostPath: "/mnt/infa/radarr"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:

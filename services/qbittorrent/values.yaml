@@ -85,7 +85,7 @@ app-template:
     main-config:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/qbittorrent"
+      hostPath: "/mnt/infa/qbittorrent"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         main:

@@ -166,7 +166,7 @@ app-template:
     server-upload:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/hdd2/immich"
+      hostPath: "/mnt/infa/immich"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         server:
@@ -185,7 +185,7 @@ app-template:
     postgres-data:
       enabled: true
       type: hostPath
-      hostPath: "/mnt/infra-data/immich/postgres"
+      hostPath: "/mnt/infa/immich/postgres"
       hostPathType: DirectoryOrCreate
       advancedMounts:
         postgres:

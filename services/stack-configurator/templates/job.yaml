@@ -27,12 +27,12 @@ spec:
               mountPath: /app/script.py
               subPath: script.py
             - name: infra-data
-              mountPath: /mnt/infra-data
+              mountPath: /mnt/infa
       volumes:
         - name: script
           configMap:
             name: stack-configurator-script
         - name: infra-data
           hostPath:
-            path: /mnt/infra-data
+            path: /mnt/infa
             type: Directory

@@ -11,7 +11,7 @@ data:
     import time
 
     def get_api_key(app_name):
-        config_path = f"/mnt/infra-data/{app_name}/config.xml"
+        config_path = f"/mnt/infa/{app_name}/config.xml"
         if not os.path.exists(config_path):
             print(f"Waiting for {config_path}...")
             return None

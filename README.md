@@ -109,14 +109,14 @@ Node placement:
 | Node label | Workloads |
 |------|-----------|
 | `node-type=infra` | Traefik, cert-manager, External Secrets, and other lightweight controllers |
-| `node-type=media-worker` | All services that mount hostPath data (`/mnt/media`, `/mnt/infra-data`, `/mnt/hdd2`) |
+| `node-type=media-worker` | All services that mount hostPath data (`/mnt/media`, `/mnt/infa`) |
 
 Two host mounts, shared across the media services via `hostPath`:
 
 | Path | Purpose |
 |------|---------|
 | `/mnt/media` | Media files (tv, movies, downloads) |
-| `/mnt/infra-data/<service>` | Service configs (jellyfin, sonarr, etc.) |
+| `/mnt/infa/<service>` | Service configs (jellyfin, sonarr, etc.) |
 
 K3s pods mount the same directories Docker used on the media worker node - no data migration needed.
 
@@ -128,7 +128,7 @@ All services use `*.home.arpa` hostnames (RFC 8375). Configure resolution via:
 
 ## Teardown
 
-Removes K3s and all cluster state. Service data on `/mnt/infra-data` and `/mnt/media` is **not** touched.
+Removes K3s and all cluster state. Service data on `/mnt/infa` and `/mnt/media` is **not** touched.
 
 ```sh
 make teardown
