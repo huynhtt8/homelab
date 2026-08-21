@@ -2,6 +2,7 @@ app-template:
   fullnameOverride: glance
   controllers:
     main:
+      replicas: 0
       pod:
         nodeSelector:
           node-type: infra

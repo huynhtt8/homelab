@@ -56,30 +56,27 @@ app-template:
   persistence:
     main-library:
       enabled: true
-      type: persistentVolumeClaim
-      storageClass: longhorn
-      size: 5Gi
-      accessMode: ReadWriteOnce
+      type: hostPath
+      hostPath: "/mnt/infa/audiobooks"
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:
           - path: "/library"
     main-config:
       enabled: true
-      type: persistentVolumeClaim
-      storageClass: longhorn
-      size: 128Mi
-      accessMode: ReadWriteOnce
+      type: hostPath
+      hostPath: "/mnt/infa/audiobookshelf/config"
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:
           - path: "/config"
     main-metadata:
       enabled: true
-      type: persistentVolumeClaim
-      storageClass: longhorn
-      size: 512Mi
-      accessMode: ReadWriteOnce
+      type: hostPath
+      hostPath: "/mnt/infa/audiobookshelf/metadata"
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:

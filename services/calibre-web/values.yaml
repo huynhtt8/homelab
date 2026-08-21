@@ -59,30 +59,27 @@ app-template:
   persistence:
     config:
       enabled: true
-      type: persistentVolumeClaim
-      storageClass: longhorn
-      size: 128Mi
-      accessMode: ReadWriteOnce
+      type: hostPath
+      hostPath: "/mnt/infa/calibre-web"
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:
           - path: "/config"
     books:
       enabled: true
-      type: persistentVolumeClaim
-      storageClass: longhorn
-      size: 2Gi
-      accessMode: ReadWriteOnce
+      type: hostPath
+      hostPath: "/mnt/infa/library/books"
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:
           - path: "/calibre-library"
     ingest:
       enabled: true
-      type: persistentVolumeClaim
-      storageClass: longhorn
-      size: 1Gi
-      accessMode: ReadWriteOnce
+      type: hostPath
+      hostPath: "/mnt/infa/library/books-ingest"
+      hostPathType: DirectoryOrCreate
       advancedMounts:
         main:
           main:
