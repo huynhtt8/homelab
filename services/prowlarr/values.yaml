@@ -5,7 +5,7 @@ app-template:
       replicas: 1
       pod:
         nodeSelector:
-          node-type: media-worker
+          node-type: infra
       containers:
         main:
           image:
