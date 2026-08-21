@@ -111,14 +111,16 @@ Node placement:
 | `node-type=infra` | Traefik, cert-manager, External Secrets, and other lightweight controllers |
 | `node-type=media-worker` | All services that mount hostPath data (`/mnt/media`, `/mnt/infa`) |
 
-Two host mounts, shared across the media services via `hostPath`:
+Host mounts used by the media services:
 
 | Path | Purpose |
 |------|---------|
-| `/mnt/media` | Media files (tv, movies, downloads) |
-| `/mnt/infa/<service>` | Service configs (jellyfin, sonarr, etc.) |
+| `/mnt/media` | Combined HDD media pool for tv, movies, downloads |
+| `/mnt/infa/<service>` | SSD-backed service configs and app databases |
 
-K3s pods mount the same directories Docker used on the media worker node - no data migration needed.
+The two 500GB HDDs are mounted below `/mnt/media-a` and `/mnt/media-b`, then
+combined at `/mnt/media` with mergerfs. Kubernetes workloads should only use
+`/mnt/media` and `/mnt/infa`, not disk-specific paths.
 
 ## DNS
 
