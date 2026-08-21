@@ -4,8 +4,16 @@ app-template:
     main:
       replicas: 1
       pod:
-        nodeSelector:
-          node-type: media-worker
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                    - key: node-type
+                      operator: In
+                      values:
+                        - media-worker
       containers:
         main:
           image:
