@@ -39,7 +39,7 @@ data:
       methods:
         password:
           enabled: true
-          minLength: 12
+          minLength: 10
 
     frontend:
       name: Homelab Files
