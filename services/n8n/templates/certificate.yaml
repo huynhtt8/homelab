@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: n8n-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: n8n-tls
+  commonName: n8n.homelab.com
+  dnsNames:
+    - n8n.homelab.com
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer

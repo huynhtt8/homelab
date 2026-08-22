@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: filebrowser-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: filebrowser-tls
+  commonName: filebrowser.homelab.com
+  dnsNames:
+    - filebrowser.homelab.com
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer

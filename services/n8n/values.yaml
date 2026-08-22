@@ -1,0 +1,85 @@
+app-template:
+  fullnameOverride: n8n
+  controllers:
+    main:
+      pod:
+        nodeSelector:
+          node-type: infra
+        securityContext:
+          fsGroup: 1000
+          fsGroupChangePolicy: OnRootMismatch
+      containers:
+        main:
+          securityContext:
+            runAsGroup: 1000
+            runAsUser: 1000
+          image:
+            repository: docker.n8n.io/n8nio/n8n
+            tag: latest
+          probes:
+            liveness:
+              enabled: false
+            readiness:
+              enabled: false
+            startup:
+              enabled: false
+          env:
+          - name: TZ
+            value: Asia/Ho_Chi_Minh
+          - name: GENERIC_TIMEZONE
+            value: Asia/Ho_Chi_Minh
+          - name: N8N_HOST
+            value: n8n.homelab.com
+          - name: N8N_PORT
+            value: '5678'
+          - name: N8N_PROTOCOL
+            value: https
+          - name: N8N_EDITOR_BASE_URL
+            value: https://n8n.homelab.com/
+          - name: WEBHOOK_URL
+            value: https://n8n.homelab.com/
+          - name: N8N_PROXY_HOPS
+            value: '1'
+          ports:
+          - name: http
+            containerPort: 5678
+  service:
+    main:
+      enabled: true
+      controller: main
+      type: ClusterIP
+      ports:
+        http:
+          enabled: true
+          primary: true
+          port: 5678
+          protocol: HTTP
+  ingress:
+    main:
+      enabled: true
+      className: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: homelab-ca
+      tls:
+        - hosts:
+            - n8n.homelab.com
+          secretName: n8n-tls
+      hosts:
+      - host: n8n.homelab.com
+        paths:
+        - path: "/"
+          pathType: Prefix
+          service:
+            name: main
+            port: http
+  persistence:
+    config:
+      enabled: true
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 5Gi
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        main:
+          main:
+          - path: "/home/node/.n8n"

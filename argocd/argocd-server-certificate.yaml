@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: argocd-server-tls
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  secretName: argocd-server-tls
+  commonName: argocd.homelab.com
+  dnsNames:
+    - argocd.homelab.com
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer
