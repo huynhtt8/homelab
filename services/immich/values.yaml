@@ -149,7 +149,8 @@ app-template:
     main:
       enabled: true
       className: traefik
-      annotations: {}
+      annotations:
+        cert-manager.io/cluster-issuer: homelab-ca
       tls:
         - hosts:
             - immich.homelab.com
