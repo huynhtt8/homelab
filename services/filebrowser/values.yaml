@@ -1,25 +1,18 @@
 app-template:
-  fullnameOverride: audiobookshelf
+  fullnameOverride: filebrowser
   controllers:
     main:
-      pod:
-        nodeSelector:
-          node-type: infra
       containers:
         main:
           image:
-            repository: ghcr.io/advplyr/audiobookshelf
-            tag: latest
-          probes:
-            liveness:
-              enabled: false
-            readiness:
-              enabled: false
-            startup:
-              enabled: false
+            repository: gtstef/filebrowser
+            tag: stable
           env:
-          - name: TZ
-            value: Asia/Ho_Chi_Minh
+          - name: FILEBROWSER_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: filebrowser-admin
+                key: password
           ports:
           - name: http
             containerPort: 80
@@ -27,15 +20,13 @@ app-template:
     main:
       enabled: true
       controller: main
-      type: NodePort
+      type: ClusterIP
       ports:
         http:
           enabled: true
           primary: true
           port: 80
-          nodePort: 32378
           protocol: HTTP
-
   ingress:
     main:
       enabled: true
@@ -44,10 +35,10 @@ app-template:
         cert-manager.io/cluster-issuer: homelab-ca
       tls:
         - hosts:
-            - audiobookshelf.homelab.com
-          secretName: audiobookshelf-tls
+            - filebrowser.homelab.com
+          secretName: filebrowser-tls
       hosts:
-      - host: audiobookshelf.homelab.com
+      - host: filebrowser.homelab.com
         paths:
         - path: "/"
           pathType: Prefix
@@ -55,16 +46,24 @@ app-template:
             name: main
             port: http
   persistence:
-    main-library:
+    media-share:
       enabled: true
       type: persistentVolumeClaim
       existingClaim: media-share
       advancedMounts:
         main:
           main:
-          - path: "/library"
-            subPath: "books/audiobookshelf"
-    main-config:
+          - path: "/media"
+    config:
+      enabled: true
+      type: configMap
+      name: filebrowser-config
+      advancedMounts:
+        main:
+          main:
+          - path: "/home/filebrowser/data/config.yaml"
+            subPath: config.yaml
+    data:
       enabled: true
       type: persistentVolumeClaim
       storageClass: longhorn
@@ -73,14 +72,5 @@ app-template:
       advancedMounts:
         main:
           main:
-          - path: "/config"
-    main-metadata:
-      enabled: true
-      type: persistentVolumeClaim
-      storageClass: longhorn
-      size: 5Gi
-      accessMode: ReadWriteOnce
-      advancedMounts:
-        main:
-          main:
-          - path: "/metadata"
+          - path: "/home/filebrowser/data/tmp"
+            subPath: tmp

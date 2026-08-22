@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebrowser-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+    server:
+      port: 80
+      cacheDir: /tmp/filebrowser-cache
+      sources:
+        - path: /media
+          name: Media
+          config:
+            defaultEnabled: true
+        - path: /media/downloads
+          name: Downloads
+          config:
+            defaultEnabled: true
+        - path: /media/books
+          name: Books
+          config:
+            defaultEnabled: true
+        - path: /media/books/audiobookshelf
+          name: Audiobookshelf Library
+          config:
+            defaultEnabled: true
+        - path: /media/books/calibre-library
+          name: Calibre Library
+          config:
+            defaultEnabled: true
+        - path: /media/books/calibre-ingest
+          name: CWA Book Ingest
+          config:
+            defaultEnabled: true
+
+    auth:
+      adminUsername: admin
+      methods:
+        password:
+          enabled: true
+          minLength: 12
+
+    frontend:
+      name: Homelab Files

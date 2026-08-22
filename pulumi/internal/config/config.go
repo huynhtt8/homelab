@@ -13,7 +13,14 @@ const (
 )
 
 type Config struct {
-	Secrets []Secret
+	Runtime RuntimeConfig `json:"runtime"`
+	Secrets []Secret      `json:"secrets"`
+}
+
+type RuntimeConfig struct {
+	NFSServer         string   `json:"nfsServer"`
+	MediaPath         string   `json:"mediaPath,omitempty"`
+	RuntimeNamespaces []string `json:"runtimeNamespaces,omitempty"`
 }
 
 type Secret struct {
@@ -30,7 +37,13 @@ func Load(ctx *pulumi.Context) (*Config, error) {
 		return nil, fmt.Errorf("read secrets config: %w", err)
 	}
 
+	var runtime RuntimeConfig
+	if err := cfg.GetObject("runtime", &runtime); err != nil {
+		return nil, fmt.Errorf("read runtime config: %w", err)
+	}
+
 	stack := &Config{
+		Runtime: runtime,
 		Secrets: secrets,
 	}
 
@@ -42,6 +55,10 @@ func Load(ctx *pulumi.Context) (*Config, error) {
 }
 
 func (cfg Config) validate() error {
+	if strings.TrimSpace(cfg.Runtime.NFSServer) == "" {
+		return fmt.Errorf("runtime.nfsServer is required")
+	}
+
 	for _, secret := range cfg.Secrets {
 		if strings.TrimSpace(secret.Name) == "" {
 			return fmt.Errorf("secrets entries must include name")
@@ -57,6 +74,30 @@ func (cfg Config) validate() error {
 	}
 
 	return nil
+}
+
+func (runtime RuntimeConfig) TargetNamespaces() []string {
+	if len(runtime.RuntimeNamespaces) > 0 {
+		return runtime.RuntimeNamespaces
+	}
+
+	return []string{
+		"audiobookshelf",
+		"bazarr",
+		"calibre-web",
+		"filebrowser",
+		"jellyfin",
+		"qbittorrent",
+		"radarr",
+		"sonarr",
+	}
+}
+
+func (runtime RuntimeConfig) TargetMediaPath() string {
+	if runtime.MediaPath != "" {
+		return runtime.MediaPath
+	}
+	return "/mnt/media"
 }
 
 func (secret Secret) TargetNamespace() string {

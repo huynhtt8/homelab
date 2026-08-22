@@ -1,3 +1,7 @@
 config:
   homelab:secrets:
-    secure: AAABABvgvLQBeZ9viweTaNF8oS7hpJCJU++9UZ3a7X9FFIVAah4OBtfAjhNMv9+2QMkQbpuv6f/8VQIhM597oloGkJ+pM6B6S/cYUlEMVEeepyzzxTjlS93mu2j8Are58Iu+ZBats2QcArHxt2XU00+ejszv0SMm5TOppC9GLVHrPKx2MegMkM4z84O55zLtOu3r7WWsZN8OSi2C1ffWdYwI8nJs+1u/jSV7BsaopOpOl/b54qEQRmmjkQMq7hzIHrKtj9Djw/0H3safJ09pQUz0fJxmOzd/3/T0tFgPPGjTf5k4C2DtOs/KHh75e05sNwuJRKbVLnkRBdQHCp+Voe3HmJUR6KjhZqL8AM5YryzH7S5TPEcl1Ol1SJmFSGhpbK0xlBIw4jJv
+    secure: AAABAJ+PkzFDe2FNLeqZmVYLYFqqzE2Q+hy/ZUfU9hNM0w0QumrtPZkxFJeWclU5PPABdQZt4cNFLwm08667l7ZIYId9K1jY+Xd+0sQtFc6afZ0koGtaIf0/c/s+uwoc15ewWfEsjFkU4RBq+m2WheMclUDvFH68fbgl13OHOBqv5jz66UHHoUxYW6XigGhrv8M8bJLSSVsG+xMOHrBTp3V/c/wA29iTjdgGji++q+iL4VEEQohLcs5IjR+DJNzaPMOa3eGX58/KhDa9ocRub+EmjKF9nFap8Pwzw/zapE1MlU/2yGa9+y/KTHAZpEASIKSpWXG4Q+hTyN+oYN/zp1R9Bve+VxuERzm2ueyj6wvyOIjoJ8IeYbJ7mvCIybkYq0lnCH26wu8dOsR+B5XM5FAVSUAL55jQq+0ujnNpuTZn/TGkZMgret2K4H/GqW//CLtfbKH+1GFRTQHCNmA7S64a3W+lq55f/Ja5sRtUqBC1nkPvFHPUUZMIrwvv
+  homelab:runtime:
+    nfsServer:
+      secure: AAABAKFZYyxmVUoV2txx5e+HuxdBREOPgZIyKxyqAdJTCD3RdK7weaOs294c
+    mediaPath: /mnt/media

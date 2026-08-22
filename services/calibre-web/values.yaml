@@ -43,7 +43,8 @@ app-template:
     main:
       enabled: true
       className: traefik
-      annotations: {}
+      annotations:
+        cert-manager.io/cluster-issuer: homelab-ca
       tls:
         - hosts:
             - calibre-web.homelab.com
@@ -70,20 +71,11 @@ app-template:
     books:
       enabled: true
       type: persistentVolumeClaim
-      storageClass: longhorn
-      size: 20Gi
-      accessMode: ReadWriteOnce
+      existingClaim: media-share
       advancedMounts:
         main:
           main:
           - path: "/calibre-library"
-    ingest:
-      enabled: true
-      type: persistentVolumeClaim
-      storageClass: longhorn
-      size: 5Gi
-      accessMode: ReadWriteOnce
-      advancedMounts:
-        main:
-          main:
+            subPath: "books/calibre-library"
           - path: "/cwa-book-ingest"
+            subPath: "books/calibre-ingest"

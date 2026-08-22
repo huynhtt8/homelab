@@ -1,4 +1,4 @@
-.PHONY: help bootstrap bootstrap-worker teardown validate
+.PHONY: help bootstrap bootstrap-worker setup-media-nfs teardown validate
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-15s %s\n", $$1, $$2}'
@@ -8,6 +8,9 @@ bootstrap: ## Install K3s + ArgoCD on the server
 
 bootstrap-worker: ## Join a worker node to the cluster
 	K3S_ROLE=agent bash bootstrap/bootstrap.sh
+
+setup-media-nfs: ## Configure /mnt/media NFS export on the media-worker node
+	bash bootstrap/setup-media-nfs.sh
 
 teardown: ## Uninstall K3s completely (keeps service data)
 	bash bootstrap/teardown.sh

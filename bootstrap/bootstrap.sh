@@ -84,6 +84,10 @@ chmod 700 /etc/rancher/k3s
 } > "${K3S_CONFIG}"
 chmod 600 "${K3S_CONFIG}"
 
+echo "=== Installing NFS client support ==="
+apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get install -y nfs-common
+
 echo "=== Installing K3s ${K3S_VERSION} (${K3S_ROLE}) ==="
 INSTALL_K3S_EXEC="${K3S_ROLE}"
 if [ "${K3S_ROLE}" = "server" ]; then

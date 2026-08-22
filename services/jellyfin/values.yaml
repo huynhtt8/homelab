@@ -50,7 +50,8 @@ app-template:
     main:
       enabled: true
       className: traefik
-      annotations: {}
+      annotations:
+        cert-manager.io/cluster-issuer: homelab-ca
       tls:
         - hosts:
             - jellyfin.homelab.com
@@ -86,9 +87,8 @@ app-template:
           - path: "/cache"
     main-media:
       enabled: true
-      type: hostPath
-      hostPath: "/mnt/media"
-      hostPathType: ""
+      type: persistentVolumeClaim
+      existingClaim: media-share
       advancedMounts:
         main:
           main:

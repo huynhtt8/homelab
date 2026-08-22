@@ -1,4 +1,10 @@
 config:
+  # Runtime values are non-secret deployment details. Keep real hostnames/IPs in
+  # your private Pulumi stack config, not in public Kubernetes manifests.
+  runtime:
+    nfsServer: <media-worker-lan-ip-or-private-dns>
+    mediaPath: /mnt/media
+
   # App secrets should be set with:
   #   pulumi config set --secret homelab:secrets '<json-array>'
   #

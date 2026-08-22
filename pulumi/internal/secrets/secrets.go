@@ -16,7 +16,7 @@ func ensureNamespace(ctx *pulumi.Context, ns string) (*corev1.Namespace, error) 
 		return existing, nil
 	}
 
-	if !strings.Contains(err.Error(), "not found") {
+	if !strings.Contains(err.Error(), "not found") && !strings.Contains(err.Error(), "does not exist") {
 		return nil, err
 	}
 

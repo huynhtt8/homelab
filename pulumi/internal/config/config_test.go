@@ -22,24 +22,28 @@ func TestConfigValidate(t *testing.T) {
 	}{
 		"missing secret name": {
 			cfg: Config{
+				Runtime: RuntimeConfig{NFSServer: "media-worker.example"},
 				Secrets: []Secret{{Data: map[string]string{"PASSWORD": "value"}}},
 			},
 			want: "secrets entries must include name",
 		},
 		"empty secret data": {
 			cfg: Config{
+				Runtime: RuntimeConfig{NFSServer: "media-worker.example"},
 				Secrets: []Secret{{Name: "immich.db"}},
 			},
 			want: `secret "immich.db" must include at least one data key`,
 		},
 		"empty secret key": {
 			cfg: Config{
+				Runtime: RuntimeConfig{NFSServer: "media-worker.example"},
 				Secrets: []Secret{{Name: "immich.db", Data: map[string]string{" ": "value"}}},
 			},
 			want: `secret "immich.db" contains an empty data key`,
 		},
 		"valid": {
 			cfg: Config{
+				Runtime: RuntimeConfig{NFSServer: "media-worker.example"},
 				Secrets: []Secret{
 					{Name: "immich.db", Data: map[string]string{"POSTGRES_PASSWORD": "value"}},
 				},
@@ -47,10 +51,17 @@ func TestConfigValidate(t *testing.T) {
 		},
 		"string shorthand": {
 			cfg: Config{
+				Runtime: RuntimeConfig{NFSServer: "media-worker.example"},
 				Secrets: []Secret{
 					{Name: "copyparty-password", Data: map[string]string{"password": "value"}},
 				},
 			},
+		},
+		"missing nfs server": {
+			cfg: Config{
+				Secrets: []Secret{{Name: "immich.db", Data: map[string]string{"POSTGRES_PASSWORD": "value"}}},
+			},
+			want: "runtime.nfsServer is required",
 		},
 	}
 
@@ -70,5 +81,17 @@ func TestConfigValidate(t *testing.T) {
 				t.Fatalf("Validate() = %q, want substring %q", err.Error(), tt.want)
 			}
 		})
+	}
+}
+
+func TestRuntimeDefaults(t *testing.T) {
+	runtime := RuntimeConfig{NFSServer: "media-worker.example"}
+
+	if got := runtime.TargetMediaPath(); got != "/mnt/media" {
+		t.Fatalf("TargetMediaPath() = %q, want /mnt/media", got)
+	}
+
+	if got := runtime.TargetNamespaces(); len(got) != 8 {
+		t.Fatalf("TargetNamespaces() returned %d namespaces, want 8", len(got))
 	}
 }

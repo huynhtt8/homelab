@@ -78,6 +78,26 @@ K3S_TOKEN='k3s token from server' \
 make bootstrap-worker
 ```
 
+On the media-worker node, export the shared media root over NFS before syncing
+media services:
+
+```sh
+sudo make setup-media-nfs
+```
+
+Store the real NFS server address in private Pulumi config, not in public Helm
+values:
+
+```sh
+cd pulumi
+pulumi config set --path homelab:runtime.nfsServer '<media-worker-lan-ip-or-private-dns>'
+pulumi config set --path homelab:runtime.mediaPath /mnt/media
+pulumi up
+```
+
+Pulumi creates one `media-share` PVC in each namespace that needs shared media.
+Service charts only reference that claim name.
+
 ### 2. Apply root service (one-time)
 
 ```sh
@@ -113,21 +133,31 @@ Node placement:
 | Node label | Workloads |
 |------|-----------|
 | `node-type=infra` | Traefik, cert-manager, External Secrets, and other lightweight controllers |
-| `node-type=media-worker` | Services that mount the shared media hostPath (`/mnt/media`) |
+| `node-type=media-worker` | Media services and the node that exports `/mnt/media` over NFS |
 
-Host mounts used by the media services:
+Storage used by the media services:
 
 | Path | Purpose |
 |------|---------|
-| `/mnt/media` | Combined HDD media pool for tv, movies, downloads |
+| NFS `/mnt/media` | Combined media pool for tv, movies, downloads, and book libraries |
 | Longhorn PVCs | Service configs, app databases, metadata, and app-owned files |
 
 The two 500GB HDDs are mounted below `/mnt/media-a` and `/mnt/media-b`, then
-combined at `/mnt/media` with mergerfs. Kubernetes workloads should only use
-`/mnt/media` for shared media and Longhorn PVCs for app state, not disk-specific
-paths. Media hostPaths intentionally do not use `DirectoryOrCreate`, so a pod
-will not create an empty media tree when scheduled onto a node that is not
-prepared for media.
+combined at `/mnt/media` with mergerfs. The media-worker exports `/mnt/media`
+over NFS, and Kubernetes workloads mount that export instead of node-local
+`hostPath` volumes. This keeps shared media visible when pods run on another
+cluster node.
+
+The standard shared layout is:
+
+| Host/NFS path | Container path |
+|---------------|----------------|
+| `/mnt/media/movies` | `/data/movies` |
+| `/mnt/media/tv` | `/data/tv` |
+| `/mnt/media/downloads` | `/data/downloads` |
+| `/mnt/media/books/audiobookshelf` | `/library` |
+| `/mnt/media/books/calibre-library` | `/calibre-library` |
+| `/mnt/media/books/calibre-ingest` | `/cwa-book-ingest` |
 
 Copyparty currently uses Longhorn RWO PVCs and should run as a single replica.
 For active multi-replica Copyparty across nodes, move the share volume to RWX
