@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: olivetin-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+    listenAddressSingleHTTPFrontend: 0.0.0.0:1337
+
+    actions:
+      - title: Test SSH to NAS
+        icon: ping
+        shell: ssh -F /config/ssh/config "${POWER_SSH_USER}@${NAS_HOST}" "hostname && uptime"
+        timeout: 20
+        onclick: execution-dialog
+
+      - title: Test SSH to media worker
+        icon: ping
+        shell: ssh -F /config/ssh/config "${POWER_SSH_USER}@${MEDIA_WORKER_HOST}" "hostname && uptime"
+        timeout: 20
+        onclick: execution-dialog
+
+      - title: Test SSH to K3s master
+        icon: ping
+        shell: ssh -F /config/ssh/config "${POWER_SSH_USER}@${K3S_MASTER_HOST}" "hostname && uptime"
+        timeout: 20
+        onclick: execution-dialog
+
+      - title: Shutdown NAS
+        icon: shutdown
+        shell: ssh -F /config/ssh/config "${POWER_SSH_USER}@${NAS_HOST}" "sudo /sbin/shutdown -h now"
+        timeout: 20
+        onclick: execution-dialog
+        arguments:
+          - type: confirmation
+            title: Confirm shutdown NAS
+
+      - title: Shutdown media worker
+        icon: shutdown
+        shell: ssh -F /config/ssh/config "${POWER_SSH_USER}@${MEDIA_WORKER_HOST}" "sudo /sbin/shutdown -h now"
+        timeout: 20
+        onclick: execution-dialog
+        arguments:
+          - type: confirmation
+            title: Confirm shutdown media worker
+
+      - title: Shutdown K3s master
+        icon: shutdown
+        shell: ssh -F /config/ssh/config "${POWER_SSH_USER}@${K3S_MASTER_HOST}" "sudo /sbin/shutdown -h now"
+        timeout: 20
+        onclick: execution-dialog
+        arguments:
+          - type: confirmation
+            title: Confirm shutdown K3s master
+
+      - title: Safe shutdown all
+        icon: shutdown
+        shell: |
+          set -eu
+          ssh -F /config/ssh/config "${POWER_SSH_USER}@${K3S_MASTER_HOST}" "kubectl cordon ${MEDIA_WORKER_NODE} || true; kubectl drain ${MEDIA_WORKER_NODE} --ignore-daemonsets --delete-emptydir-data --force --timeout=120s || true"
+          ssh -F /config/ssh/config "${POWER_SSH_USER}@${MEDIA_WORKER_HOST}" "sudo /sbin/shutdown -h now" || true
+          ssh -F /config/ssh/config "${POWER_SSH_USER}@${NAS_HOST}" "sudo /sbin/shutdown -h now" || true
+          ssh -F /config/ssh/config "${POWER_SSH_USER}@${K3S_MASTER_HOST}" "sudo /sbin/shutdown -h now"
+        timeout: 180
+        onclick: execution-dialog
+        arguments:
+          - type: confirmation
+            title: Confirm safe shutdown all systems

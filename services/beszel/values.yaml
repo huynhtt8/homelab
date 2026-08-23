@@ -1,0 +1,55 @@
+app-template:
+  fullnameOverride: beszel
+  controllers:
+    main:
+      containers:
+        main:
+          image:
+            repository: henrygd/beszel
+            tag: latest
+          env:
+          - name: APP_URL
+            value: https://beszel.homelab.com
+          ports:
+          - name: http
+            containerPort: 8090
+  service:
+    main:
+      enabled: true
+      controller: main
+      type: ClusterIP
+      ports:
+        http:
+          enabled: true
+          primary: true
+          port: 8090
+          protocol: HTTP
+  ingress:
+    main:
+      enabled: true
+      className: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: homelab-ca
+      tls:
+        - hosts:
+            - beszel.homelab.com
+          secretName: beszel-tls
+      hosts:
+      - host: beszel.homelab.com
+        paths:
+        - path: "/"
+          pathType: Prefix
+          service:
+            name: main
+            port: http
+  persistence:
+    data:
+      enabled: true
+      type: persistentVolumeClaim
+      storageClass: longhorn
+      size: 5Gi
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        main:
+          main:
+          - path: "/beszel_data"
