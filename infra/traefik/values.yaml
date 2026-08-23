@@ -14,8 +14,19 @@ traefik:
       allowCrossNamespace: true
     kubernetesIngress:
       enabled: true
+      allowExternalNameServices: true
       ingressEndpoint:
         hostname: traefik.homelab.com
+  ingressRoute:
+    dashboard:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: homelab-ca
+      matchRule: Host(`traefik.homelab.com`)
+      entryPoints:
+        - websecure
+      tls:
+        secretName: traefik-dashboard-tls
   ports:
     web:
       http:

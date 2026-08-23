@@ -4,6 +4,9 @@ config:
   runtime:
     nfsServer: <media-worker-lan-ip-or-private-dns>
     mediaPath: /mnt/media
+    # Optional: enables https://adguard.homelab.com through Traefik.
+    # Set this in the private stack config, preferably as a secret.
+    adguardHomeHost: <worker-lan-ip-or-private-dns>
 
   # App secrets should be set with:
   #   pulumi config set --secret homelab:secrets '<json-array>'

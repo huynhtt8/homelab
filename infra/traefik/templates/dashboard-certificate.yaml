@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: traefik-dashboard-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: traefik-dashboard-tls
+  issuerRef:
+    name: homelab-ca
+    kind: ClusterIssuer
+  commonName: traefik.homelab.com
+  dnsNames:
+    - traefik.homelab.com

@@ -20,6 +20,7 @@ type Config struct {
 type RuntimeConfig struct {
 	NFSServer         string   `json:"nfsServer"`
 	MediaPath         string   `json:"mediaPath,omitempty"`
+	AdGuardHomeHost   string   `json:"adguardHomeHost,omitempty"`
 	RuntimeNamespaces []string `json:"runtimeNamespaces,omitempty"`
 }
 

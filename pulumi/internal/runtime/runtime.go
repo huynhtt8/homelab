@@ -7,10 +7,12 @@ import (
 	"github.com/huynhtt8/homelab/pulumi/internal/naming"
 	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
+	networkingv1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/networking/v1"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 const mediaClaimName = "media-share"
+const traefikNamespace = "traefik"
 
 func ensureNamespace(ctx *pulumi.Context, ns string) (*corev1.Namespace, error) {
 	existing, err := corev1.GetNamespace(ctx, naming.Resource("namespace", ns), pulumi.ID(ns), nil)
@@ -103,6 +105,95 @@ func Create(ctx *pulumi.Context, cfg config.RuntimeConfig) error {
 		}
 	}
 
+	if err := createAdGuardHomeIngress(ctx, cfg); err != nil {
+		return err
+	}
+
 	ctx.Export("mediaShareCount", pulumi.Int(len(cfg.TargetNamespaces())))
 	return nil
+}
+
+func createAdGuardHomeIngress(ctx *pulumi.Context, cfg config.RuntimeConfig) error {
+	host := strings.TrimSpace(cfg.AdGuardHomeHost)
+	if host == "" {
+		return nil
+	}
+
+	namespace, err := ensureNamespace(ctx, traefikNamespace)
+	if err != nil {
+		return err
+	}
+
+	_, err = corev1.NewService(ctx, naming.Resource("service", "adguard-home"), &corev1.ServiceArgs{
+		Metadata: &metav1.ObjectMetaArgs{
+			Name:      pulumi.String("adguard-home"),
+			Namespace: pulumi.String(traefikNamespace),
+			Labels: pulumi.StringMap{
+				"app.kubernetes.io/managed-by": pulumi.String("pulumi"),
+				"app.kubernetes.io/part-of":    pulumi.String("homelab"),
+			},
+		},
+		Spec: &corev1.ServiceSpecArgs{
+			Type:         pulumi.String("ExternalName"),
+			ExternalName: pulumi.String(host),
+			Ports: corev1.ServicePortArray{
+				&corev1.ServicePortArgs{
+					Name:       pulumi.String("http"),
+					Port:       pulumi.Int(82),
+					TargetPort: pulumi.Int(82),
+					Protocol:   pulumi.String("TCP"),
+				},
+			},
+		},
+	}, pulumi.DependsOn([]pulumi.Resource{namespace}))
+	if err != nil {
+		return err
+	}
+
+	_, err = networkingv1.NewIngress(ctx, naming.Resource("ingress", "adguard-home"), &networkingv1.IngressArgs{
+		Metadata: &metav1.ObjectMetaArgs{
+			Name:      pulumi.String("adguard-home"),
+			Namespace: pulumi.String(traefikNamespace),
+			Labels: pulumi.StringMap{
+				"app.kubernetes.io/managed-by": pulumi.String("pulumi"),
+				"app.kubernetes.io/part-of":    pulumi.String("homelab"),
+			},
+			Annotations: pulumi.StringMap{
+				"cert-manager.io/cluster-issuer": pulumi.String("homelab-ca"),
+			},
+		},
+		Spec: &networkingv1.IngressSpecArgs{
+			IngressClassName: pulumi.String("traefik"),
+			Tls: networkingv1.IngressTLSArray{
+				&networkingv1.IngressTLSArgs{
+					Hosts: pulumi.StringArray{
+						pulumi.String("adguard.homelab.com"),
+					},
+					SecretName: pulumi.String("adguard-home-tls"),
+				},
+			},
+			Rules: networkingv1.IngressRuleArray{
+				&networkingv1.IngressRuleArgs{
+					Host: pulumi.String("adguard.homelab.com"),
+					Http: &networkingv1.HTTPIngressRuleValueArgs{
+						Paths: networkingv1.HTTPIngressPathArray{
+							&networkingv1.HTTPIngressPathArgs{
+								Path:     pulumi.String("/"),
+								PathType: pulumi.String("Prefix"),
+								Backend: &networkingv1.IngressBackendArgs{
+									Service: &networkingv1.IngressServiceBackendArgs{
+										Name: pulumi.String("adguard-home"),
+										Port: &networkingv1.ServiceBackendPortArgs{
+											Name: pulumi.String("http"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}, pulumi.DependsOn([]pulumi.Resource{namespace}))
+	return err
 }

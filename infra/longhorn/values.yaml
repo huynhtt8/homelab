@@ -26,7 +26,15 @@ longhorn:
   longhornUI:
     replicas: 1
   ingress:
-    enabled: false
+    enabled: true
+    ingressClassName: traefik
+    host: longhorn.homelab.com
+    path: /
+    pathType: Prefix
+    tls: true
+    tlsSecret: longhorn-tls
+    annotations:
+      cert-manager.io/cluster-issuer: homelab-ca
   service:
     ui:
       type: ClusterIP
