@@ -111,7 +111,9 @@ Expected remote secret key: `olivetin-power-control`
 
 Required properties:
 
-- `POWER_SSH_USER`: SSH user with passwordless sudo for `/sbin/shutdown`.
+- `NAS_SSH_USER`: NAS SSH user, currently `nas`.
+- `MEDIA_WORKER_SSH_USER`: media worker SSH user, currently `homelab`.
+- `K3S_MASTER_SSH_USER`: K3s control-plane SSH user, currently `worker`.
 - `NAS_HOST`: NAS tailnet or private DNS hostname.
 - `MEDIA_WORKER_HOST`: media worker SSH hostname, for example `<media-worker-tailnet-host>`.
 - `K3S_MASTER_HOST`: K3s control-plane SSH hostname, for example `<k3s-master-tailnet-host>`.
