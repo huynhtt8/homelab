@@ -9,13 +9,13 @@ longhorn:
     snapshotterReplicaCount: 1
   persistence:
     defaultClass: true
-    defaultClassReplicaCount: 1
+    defaultClassReplicaCount: 2
     reclaimPolicy: Retain
     defaultNodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
   defaultSettings:
     createDefaultDiskLabeledNodes: false
     defaultDataPath: /var/lib/longhorn
-    defaultReplicaCount: 1
+    defaultReplicaCount: 2
     replicaSoftAntiAffinity: false
     storageMinimalAvailablePercentage: 10
     storageOverProvisioningPercentage: 100

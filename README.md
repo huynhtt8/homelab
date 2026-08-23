@@ -38,8 +38,9 @@ Makefile             bootstrap / teardown / validate
 git clone https://github.com/huynhtt8/homelab && cd homelab
 K3S_ROLE=server \
 K3S_NODE_NAME=k3s-master-01 \
-K3S_NODE_IP=<server-tailnet-ip> \
+K3S_NODE_IP=<server-lan-ip> \
 K3S_NODE_EXTERNAL_IP=<server-tailnet-ip> \
+K3S_FLANNEL_EXTERNAL_IP=false \
 TLS_SANS='<server-tailnet-ip> k3s-master-01 <server-name>.your-tailnet.ts.net' \
 ARGOCD_ADMIN_PASSWORD='your-secret' \
 make bootstrap
@@ -59,8 +60,9 @@ node names in your shell env, not in Git.
 ```sh
 K3S_ROLE=server \
 K3S_NODE_NAME=k3s-master-01 \
-K3S_NODE_IP=<server-tailnet-ip> \
+K3S_NODE_IP=<server-lan-ip> \
 K3S_NODE_EXTERNAL_IP=<server-tailnet-ip> \
+K3S_FLANNEL_EXTERNAL_IP=false \
 TLS_SANS='<server-name>.your-tailnet.ts.net <server-tailnet-ip>' \
 ARGOCD_ADMIN_PASSWORD='your-secret' \
 make bootstrap
@@ -71,11 +73,55 @@ To join the worker node, run the same script in agent mode:
 ```sh
 K3S_ROLE=agent \
 K3S_NODE_NAME=k3s-worker-media-01 \
-K3S_NODE_IP=<worker-tailnet-ip> \
+K3S_NODE_IP=<worker-lan-ip> \
 K3S_NODE_EXTERNAL_IP=<worker-tailnet-ip> \
 K3S_SERVER_URL=https://<server-tailnet-ip>:6443 \
 K3S_TOKEN='k3s token from server' \
 make bootstrap-worker
+```
+
+To reset a standalone Wyse 5070 and join it as a clean agent, first back up
+anything still needed from the old node, then run the matching K3s uninstall
+script on the Wyse:
+
+```sh
+sudo /usr/local/bin/k3s-uninstall.sh
+# or, if the node was installed as an agent:
+sudo /usr/local/bin/k3s-agent-uninstall.sh
+```
+
+Remove stale cluster state only after confirming the old node data is not
+needed:
+
+```sh
+sudo rm -rf /etc/rancher/k3s /var/lib/rancher/k3s /var/lib/kubelet /var/lib/longhorn
+sudo apt-get update
+sudo apt-get install -y nfs-common open-iscsi
+sudo systemctl enable --now iscsid
+```
+
+Join the Wyse with its own node name and private IP:
+
+```sh
+K3S_ROLE=agent \
+K3S_NODE_NAME=k3s-worker-wyse-5070 \
+K3S_NODE_IP=<wyse-lan-ip> \
+K3S_NODE_EXTERNAL_IP=<wyse-tailnet-ip> \
+K3S_SERVER_URL=https://<server-tailnet-ip>:6443 \
+K3S_TOKEN='k3s token from server' \
+make bootstrap-worker
+```
+
+After it joins, label the nodes:
+
+```sh
+kubectl label node k3s-master-01 node-type=infra --overwrite
+kubectl label node k3s-master-01 hardware.zigbee=true --overwrite
+kubectl label node k3s-master-01 node.longhorn.io/create-default-disk=true --overwrite
+
+kubectl label node k3s-worker-wyse-5070 node-type=infra --overwrite
+kubectl label node k3s-worker-wyse-5070 workload-tier=general --overwrite
+kubectl label node k3s-worker-wyse-5070 node.longhorn.io/create-default-disk=true --overwrite
 ```
 
 On the media-worker node, export the shared media root over NFS before syncing
@@ -141,6 +187,10 @@ Storage used by the media services:
 |------|---------|
 | NFS `/mnt/media` | Combined media pool for tv, movies, downloads, and book libraries |
 | Longhorn PVCs | Service configs, app databases, metadata, and app-owned files |
+
+Longhorn defaults new volumes to two replicas. Existing volumes created with one
+replica must still be updated in Longhorn after the second storage node is
+available, then left to rebuild before relying on node failover.
 
 The two 500GB HDDs are mounted below `/mnt/media-a` and `/mnt/media-b`, then
 combined at `/mnt/media` with mergerfs. The media-worker exports `/mnt/media`

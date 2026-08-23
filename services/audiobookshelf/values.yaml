@@ -2,9 +2,6 @@ app-template:
   fullnameOverride: audiobookshelf
   controllers:
     main:
-      pod:
-        nodeSelector:
-          node-type: infra
       containers:
         main:
           image:
