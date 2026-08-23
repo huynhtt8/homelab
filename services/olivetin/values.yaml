@@ -15,21 +15,11 @@ app-template:
             repository: jamesread/olivetin
             tag: latest
           env:
-          - name: NAS_SSH_USER
+          - name: POWER_SSH_USER
             valueFrom:
               secretKeyRef:
                 name: olivetin-power-control
-                key: NAS_SSH_USER
-          - name: MEDIA_WORKER_SSH_USER
-            valueFrom:
-              secretKeyRef:
-                name: olivetin-power-control
-                key: MEDIA_WORKER_SSH_USER
-          - name: K3S_MASTER_SSH_USER
-            valueFrom:
-              secretKeyRef:
-                name: olivetin-power-control
-                key: K3S_MASTER_SSH_USER
+                key: POWER_SSH_USER
           - name: NAS_HOST
             valueFrom:
               secretKeyRef:
